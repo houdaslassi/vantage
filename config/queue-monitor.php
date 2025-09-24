@@ -7,4 +7,8 @@ return [
     'notify_on_failure' => true,
     'notification_channels' => ['mail'],
     'routes' => false,
+    'notify' => [
+        'email' => env('QUEUE_MONITOR_NOTIFY_EMAIL', null),
+        'slack_webhook' => env('QUEUE_MONITOR_SLACK_WEBHOOK', null),
+    ],
 ];
