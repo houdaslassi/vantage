@@ -2,6 +2,8 @@
 
 namespace houdaslassi\QueueMonitor\Listeners;
 
+use houdaslassi\QueueMonitor\Notifications\JobFailedNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Str;
 use houdaslassi\QueueMonitor\Models\QueueJobRun;
@@ -10,7 +12,7 @@ class RecordJobFailure
 {
     public function handle(JobFailed $event): void
     {
-        QueueJobRun::create([
+        $row = QueueJobRun::create([
             'uuid'             => (string) Str::uuid(),
             'job_class'        => method_exists($event->job, 'resolveName')
                 ? $event->job->resolveName()
@@ -24,5 +26,11 @@ class RecordJobFailure
             'stack'            => Str::limit($event->exception->getTraceAsString(), 4000),
             'finished_at'      => now(),
         ]);
+
+        if (config('queue-monitor.notify.email') || config('queue-monitor.notify.slack_webhook')) {
+            Notification::route('mail', config('queue-monitor.notify.email'))
+                ->route('slack', config('queue-monitor.notify.slack_webhook'))
+                ->notify(new JobFailedNotification($row));
+        }
     }
 }
