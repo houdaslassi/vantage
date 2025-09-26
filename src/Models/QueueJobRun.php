@@ -8,24 +8,21 @@ class QueueJobRun extends Model
 {
     protected $table = 'queue_job_runs';
 
-    protected $fillable = [
-        'uuid',
-        'job_class',
-        'queue',
-        'connection',
-        'attempt',
-        'status',
-        'duration_ms',
-        'exception_class',
-        'exception_message',
-        'stack',
-        'payload_excerpt',
-        'started_at',
-        'finished_at',
-    ];
+    protected static $unguarded = true;
 
     protected $casts = [
         'started_at'  => 'datetime',
         'finished_at' => 'datetime',
     ];
+
+    public function retriedFrom()
+    {
+        return $this->belongsTo(self::class, 'retried_from_id');
+    }
+
+    public function retries()
+    {
+        return $this->hasMany(self::class, 'retried_from_id');
+    }
+
 }
