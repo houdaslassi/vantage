@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Traits;
+namespace houdaslassi\QueueMonitor\Support\Traits;
 
 trait ExtractsRetryOf
 {

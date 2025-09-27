@@ -2,7 +2,7 @@
 
 namespace houdaslassi\QueueMonitor\Listeners;
 
-use houdaslassi\QueueMonitor\Traits\ExtractsRetryOf;
+use houdaslassi\QueueMonitor\Support\Traits\ExtractsRetryOf;
 use Illuminate\Queue\Events\JobProcessing;
 use houdaslassi\QueueMonitor\Models\QueueJobRun;
 

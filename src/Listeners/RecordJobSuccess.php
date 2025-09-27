@@ -2,9 +2,9 @@
 
 namespace houdaslassi\QueueMonitor\Listeners;
 
+use houdaslassi\QueueMonitor\Support\Traits\ExtractsRetryOf;
 use Illuminate\Queue\Events\JobProcessed;
 use houdaslassi\QueueMonitor\Models\QueueJobRun;
-use houdaslassi\QueueMonitor\Traits\ExtractsRetryOf;
 
 class RecordJobSuccess
 {
