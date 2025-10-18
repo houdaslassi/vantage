@@ -3,6 +3,7 @@
 namespace houdaslassi\QueueMonitor\Listeners;
 
 use houdaslassi\QueueMonitor\Support\Traits\ExtractsRetryOf;
+use houdaslassi\QueueMonitor\Support\PayloadExtractor;
 use Illuminate\Queue\Events\JobProcessing;
 use houdaslassi\QueueMonitor\Models\QueueJobRun;
 
@@ -13,14 +14,19 @@ class RecordJobStart
     public function handle(JobProcessing $event): void
     {
         QueueJobRun::create([
-            'uuid'        => $this->bestUuid($event),
-            'job_class'   => $this->jobClass($event),
-            'queue'       => $event->job->getQueue(),
-            'connection'  => $event->connectionName ?? null,
-            'attempt'     => $event->job->attempts(),
-            'status'      => 'processing',
-            'started_at'  => now(),
+            'uuid'             => $this->bestUuid($event),
+            'job_class'        => $this->jobClass($event),
+            'queue'            => $event->job->getQueue(),
+            'connection'       => $event->connectionName ?? null,
+            'attempt'          => $event->job->attempts(),
+            'status'           => 'processing',
+            'started_at'       => now(),
             'retried_from_id'  => $this->getRetryOf($event),
+            'payload'          => PayloadExtractor::getPayload($event),
+            'job_tags'         => config('queue-monitor.tagging.enabled', true) 
+                                    ? PayloadExtractor::extractTags($event) 
+                                    : null,
         ]);
     }
 }
+
