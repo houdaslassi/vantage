@@ -1,13 +1,13 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Console\Commands;
+namespace houdaslassi\Vantage\Console\Commands;
 
 use Illuminate\Console\Command;
-use houdaslassi\QueueMonitor\Models\QueueJobRun;
+use houdaslassi\Vantage\Models\QueueJobRun;
 
 class CleanupStuckJobs extends Command
 {
-    protected $signature = 'queue-monitor:cleanup-stuck
+    protected $signature = 'vantage:cleanup-stuck
                             {--timeout=1 : Hours to consider a job stuck (default: 1 hour)}
                             {--dry-run : Show what would be cleaned without actually cleaning}';
     

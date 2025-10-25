@@ -1,12 +1,12 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Listeners;
+namespace houdaslassi\Vantage\Listeners;
 
-use houdaslassi\QueueMonitor\Support\Traits\ExtractsRetryOf;
-use houdaslassi\QueueMonitor\Support\TagExtractor;
-use houdaslassi\QueueMonitor\Support\PayloadExtractor;
+use houdaslassi\Vantage\Support\Traits\ExtractsRetryOf;
+use houdaslassi\Vantage\Support\TagExtractor;
+use houdaslassi\Vantage\Support\PayloadExtractor;
 use Illuminate\Queue\Events\JobProcessed;
-use houdaslassi\QueueMonitor\Models\QueueJobRun;
+use houdaslassi\Vantage\Models\QueueJobRun;
 use Illuminate\Support\Facades\Log;
 
 class RecordJobSuccess

@@ -1,13 +1,13 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Notifications;
+namespace houdaslassi\Vantage\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
-use houdaslassi\QueueMonitor\Models\QueueJobRun;
+use houdaslassi\Vantage\Models\QueueJobRun;
 
 class JobFailedNotification extends Notification implements ShouldQueue
 {
@@ -19,11 +19,11 @@ class JobFailedNotification extends Notification implements ShouldQueue
     {
         $channels = [];
 
-        if (config('queue-monitor.notify.email')) {
+        if (config('vantage.notify.email')) {
             $channels[] = 'mail';
         }
 
-        if (config('queue-monitor.notify.slack_webhook')) {
+        if (config('vantage.notify.slack_webhook')) {
             $channels[] = 'slack';
         }
 

@@ -1,4 +1,4 @@
-@extends('queue-monitor::layout')
+@extends('vantage::layout')
 
 @section('title', 'Tags Analytics')
 

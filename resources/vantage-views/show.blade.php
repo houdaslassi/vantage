@@ -1,4 +1,4 @@
-@extends('queue-monitor::layout')
+@extends('vantage::layout')
 
 @section('title', 'Job Details')
 
@@ -10,14 +10,14 @@
     </div>
     <div class="flex gap-2">
         @if($job->status === 'failed')
-            <form action="{{ route('queue-monitor.jobs.retry', $job->id) }}" method="POST" class="inline">
+            <form action="{{ route('vantage.jobs.retry', $job->id) }}" method="POST" class="inline">
                 @csrf
                 <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
                     🔄 Retry Job
                 </button>
             </form>
         @endif
-        <a href="{{ route('queue-monitor.jobs') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+        <a href="{{ route('vantage.jobs') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
             ← Back to Jobs
         </a>
     </div>
@@ -155,7 +155,7 @@
                     <div class="mb-4">
                         <p class="text-sm text-gray-500 mb-2">Original Job:</p>
                         @foreach($retryChain as $retry)
-                            <a href="{{ route('queue-monitor.jobs.show', $retry->id) }}" 
+                            <a href="{{ route('vantage.jobs.show', $retry->id) }}" 
                                class="block text-sm text-indigo-600 hover:text-indigo-800 mb-1">
                                 #{{ $retry->id }} - {{ $retry->status }} ({{ $retry->created_at->diffForHumans() }})
                             </a>
@@ -170,7 +170,7 @@
                     <div>
                         <p class="text-sm text-gray-500 mb-2">Retried As:</p>
                         @foreach($job->retries as $retry)
-                            <a href="{{ route('queue-monitor.jobs.show', $retry->id) }}" 
+                            <a href="{{ route('vantage.jobs.show', $retry->id) }}" 
                                class="block text-sm text-indigo-600 hover:text-indigo-800 mb-1">
                                 #{{ $retry->id }} - {{ $retry->status }} ({{ $retry->created_at->diffForHumans() }})
                             </a>

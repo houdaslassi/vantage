@@ -1,4 +1,4 @@
-@extends('queue-monitor::layout')
+@extends('vantage::layout')
 
 @section('title', 'Dashboard')
 
@@ -236,7 +236,7 @@
     <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900">Recent Jobs</h3>
-            <a href="{{ route('queue-monitor.jobs') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+            <a href="{{ route('vantage.jobs') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
                 View all →
             </a>
         </div>
@@ -304,7 +304,7 @@
                                 {{ $job->created_at->diffForHumans() }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('queue-monitor.jobs.show', $job->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                <a href="{{ route('vantage.jobs.show', $job->id) }}" class="text-indigo-600 hover:text-indigo-900">
                                     View
                                 </a>
                             </td>

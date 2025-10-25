@@ -1,20 +1,20 @@
 <?php
 
-namespace houdaslassi\QueueMonitor;
+namespace houdaslassi\Vantage;
 
-use houdaslassi\QueueMonitor\Console\Commands\RetryFailedJob;
+use houdaslassi\Vantage\Console\Commands\RetryFailedJob;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 
-class QueueMonitorServiceProvider extends ServiceProvider
+class VantageServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Load our default config so config('queue-monitor') works
-        $this->mergeConfigFrom(__DIR__.'/../config/queue-monitor.php', 'queue-monitor');
+        // Load our default config so config('vantage') works
+        $this->mergeConfigFrom(__DIR__.'/../config/vantage.php', 'vantage');
     }
 
     public function boot(): void
@@ -28,6 +28,8 @@ class QueueMonitorServiceProvider extends ServiceProvider
             $this->commands([
                 Console\Commands\RetryFailedJob::class,
                 Console\Commands\CleanupStuckJobs::class,
+                Console\Commands\ListJobs::class,
+                Console\Commands\TagStats::class,
             ]);
         }
 
@@ -35,10 +37,10 @@ class QueueMonitorServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Load views
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'queue-monitor');
+        $this->loadViewsFrom(__DIR__.'/../resources/vantage-views', 'vantage');
 
         // Load routes if enabled
-        if (config('queue-monitor.routes', true)) {
+        if (config('vantage.routes', true)) {
             $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         }
 

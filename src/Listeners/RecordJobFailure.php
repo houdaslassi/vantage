@@ -1,16 +1,16 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Listeners;
+namespace houdaslassi\Vantage\Listeners;
 
-use houdaslassi\QueueMonitor\Notifications\JobFailedNotification;
-use houdaslassi\QueueMonitor\Support\Traits\ExtractsRetryOf;
-use houdaslassi\QueueMonitor\Support\TagExtractor;
-use houdaslassi\QueueMonitor\Support\PayloadExtractor;
+use houdaslassi\Vantage\Notifications\JobFailedNotification;
+use houdaslassi\Vantage\Support\Traits\ExtractsRetryOf;
+use houdaslassi\Vantage\Support\TagExtractor;
+use houdaslassi\Vantage\Support\PayloadExtractor;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Str;
-use houdaslassi\QueueMonitor\Models\QueueJobRun;
+use houdaslassi\Vantage\Models\QueueJobRun;
 
 class RecordJobFailure
 {
@@ -42,9 +42,9 @@ class RecordJobFailure
            'exception' => $row->exception_class,
         ]);
 
-        if (config('queue-monitor.notify.email') || config('queue-monitor.notify.slack_webhook')) {
-            Notification::route('mail', config('queue-monitor.notify.email'))
-                ->route('slack', config('queue-monitor.notify.slack_webhook'))
+        if (config('vantage.notify.email') || config('vantage.notify.slack_webhook')) {
+            Notification::route('mail', config('vantage.notify.email'))
+                ->route('slack', config('vantage.notify.slack_webhook'))
                 ->notify(new JobFailedNotification($row));
         }
     }

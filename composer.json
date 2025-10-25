@@ -1,16 +1,16 @@
 {
-  "name": "houdaslassi/queue-monitor",
-  "description": "Laravel queue job monitoring (failures + quick retries) without heavy setup.",
+    "name": "houdaslassi/vantage",
+    "description": "Vantage: Strategic queue monitoring and observability for Laravel applications.",
   "type": "library",
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "houdaslassi\\QueueMonitor\\": "src/"
+      "houdaslassi\\Vantage\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "houdaslassi\\QueueMonitor\\Tests\\": "tests/"
+      "houdaslassi\\Vantage\\Tests\\": "tests/"
     }
   },
   "require": {
@@ -27,7 +27,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "houdaslassi\\QueueMonitor\\QueueMonitorServiceProvider"
+            "houdaslassi\\Vantage\\VantageServiceProvider"
       ]
     }
   },

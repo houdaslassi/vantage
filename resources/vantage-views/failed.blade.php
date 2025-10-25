@@ -1,4 +1,4 @@
-@extends('queue-monitor::layout')
+@extends('vantage::layout')
 
 @section('title', 'Failed Jobs')
 
@@ -42,11 +42,11 @@
                         {{ $job->finished_at ? $job->finished_at->diffForHumans() : '-' }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <a href="{{ route('queue-monitor.jobs.show', $job->id) }}" 
+                        <a href="{{ route('vantage.jobs.show', $job->id) }}" 
                            class="text-indigo-600 hover:text-indigo-900">
                             View
                         </a>
-                        <form action="{{ route('queue-monitor.jobs.retry', $job->id) }}" method="POST" class="inline">
+                        <form action="{{ route('vantage.jobs.retry', $job->id) }}" method="POST" class="inline">
                             @csrf
                             <button type="submit" class="text-green-600 hover:text-green-900">
                                 Retry

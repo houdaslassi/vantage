@@ -1,4 +1,4 @@
-@extends('queue-monitor::layout')
+@extends('vantage::layout')
 
 @section('title', 'All Jobs')
 
@@ -29,7 +29,7 @@
         <p class="mt-1 text-sm text-gray-500">Narrow down your job list</p>
     </div>
     <div class="p-6">
-        <form method="GET" action="{{ route('queue-monitor.jobs') }}" class="space-y-6">
+        <form method="GET" action="{{ route('vantage.jobs') }}" class="space-y-6">
             <!-- First row of filters -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -90,7 +90,7 @@
                         </svg>
                         Apply Filters
                     </button>
-                    <a href="{{ route('queue-monitor.jobs') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <a href="{{ route('vantage.jobs') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -202,7 +202,7 @@
                         {{ $job->created_at->diffForHumans() }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <a href="{{ route('queue-monitor.jobs.show', $job->id) }}" class="text-indigo-600 hover:text-indigo-900">
+                        <a href="{{ route('vantage.jobs.show', $job->id) }}" class="text-indigo-600 hover:text-indigo-900">
                             View
                         </a>
                     </td>

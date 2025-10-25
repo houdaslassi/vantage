@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Models;
+namespace houdaslassi\Vantage\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Support;
+namespace houdaslassi\Vantage\Support;
 
 /**
  * Simple Payload Extractor
@@ -16,7 +16,7 @@ class PayloadExtractor
      */
     public static function getPayload($event): ?string
     {
-        if (!config('queue-monitor.store_payload', true)) {
+        if (!config('vantage.store_payload', true)) {
             return null;
         }
 
@@ -212,7 +212,7 @@ class PayloadExtractor
      */
     protected static function redactSensitive(array $data): array
     {
-        $sensitiveKeys = config('queue-monitor.redact_keys', [
+        $sensitiveKeys = config('vantage.redact_keys', [
             'password', 'token', 'secret', 'api_key', 'access_token'
         ]);
 

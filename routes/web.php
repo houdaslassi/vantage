@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use houdaslassi\QueueMonitor\Http\Controllers\QueueMonitorController;
 
-Route::prefix('queue-monitor')->name('queue-monitor.')->group(function () {
+Route::prefix('vantage')->name('vantage.')->group(function () {
     Route::get('/', [QueueMonitorController::class, 'index'])->name('dashboard');
     Route::get('/jobs', [QueueMonitorController::class, 'jobs'])->name('jobs');
     Route::get('/jobs/{id}', [QueueMonitorController::class, 'show'])->name('jobs.show');

@@ -21,20 +21,20 @@
                         </h1>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{{ route('queue-monitor.dashboard') }}" 
-                           class="@if(request()->routeIs('queue-monitor.dashboard')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('vantage.dashboard') }}" 
+                           class="@if(request()->routeIs('vantage.dashboard')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Dashboard
                         </a>
-                        <a href="{{ route('queue-monitor.jobs') }}" 
-                           class="@if(request()->routeIs('queue-monitor.jobs*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('vantage.jobs') }}" 
+                           class="@if(request()->routeIs('vantage.jobs*')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             All Jobs
                         </a>
-                        <a href="{{ route('queue-monitor.failed') }}" 
-                           class="@if(request()->routeIs('queue-monitor.failed')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('vantage.failed') }}" 
+                           class="@if(request()->routeIs('vantage.failed')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Failed Jobs
                         </a>
-                        <a href="{{ route('queue-monitor.tags') }}" 
-                           class="@if(request()->routeIs('queue-monitor.tags')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="{{ route('vantage.tags') }}" 
+                           class="@if(request()->routeIs('vantage.tags')) border-indigo-500 text-gray-900 @else border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 @endif inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                             Tags
                         </a>
                     </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Support;
+namespace houdaslassi\Vantage\Support;
 
 /**
  * Simple Tag Extractor
@@ -12,7 +12,7 @@ class TagExtractor
 
     public static function extract($event): ?array
     {
-        if (!config('queue-monitor.tagging.enabled', true)) {
+        if (!config('vantage.tagging.enabled', true)) {
             return null;
         }
 
@@ -68,17 +68,17 @@ class TagExtractor
         $tags = [];
 
         // Queue name (enabled by default)
-        if (config('queue-monitor.tagging.auto_tags.queue_name', true)) {
+        if (config('vantage.tagging.auto_tags.queue_name', true)) {
             $tags[] = 'queue:' . $event->job->getQueue();
         }
 
         // Environment (disabled by default)
-        if (config('queue-monitor.tagging.auto_tags.environment', false)) {
+        if (config('vantage.tagging.auto_tags.environment', false)) {
             $tags[] = 'env:' . app()->environment();
         }
 
         // Hour (disabled by default)
-        if (config('queue-monitor.tagging.auto_tags.hour', false)) {
+        if (config('vantage.tagging.auto_tags.hour', false)) {
             $tags[] = 'hour:' . now()->format('H');
         }
 
@@ -106,7 +106,7 @@ class TagExtractor
         $tags = array_values($tags);
 
         // Limit to max tags
-        $maxTags = config('queue-monitor.tagging.max_tags_per_job', 20);
+        $maxTags = config('vantage.tagging.max_tags_per_job', 20);
         if (count($tags) > $maxTags) {
             $tags = array_slice($tags, 0, $maxTags);
         }

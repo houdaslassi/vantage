@@ -11,7 +11,7 @@ return [
     | sensitive keys. Disable to save database space if not needed.
     |
     */
-    'store_payload' => env('QUEUE_MONITOR_STORE_PAYLOAD', true),
+    'store_payload' => env('VANTAGE_STORE_PAYLOAD', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -50,8 +50,8 @@ return [
     'notify_on_failure' => true,
     'notification_channels' => ['mail'],
     'notify' => [
-        'email' => env('QUEUE_MONITOR_NOTIFY_EMAIL', null),
-        'slack_webhook' => env('QUEUE_MONITOR_SLACK_WEBHOOK', null),
+        'email' => env('VANTAGE_NOTIFY_EMAIL', null),
+        'slack_webhook' => env('VANTAGE_SLACK_WEBHOOK', null),
     ],
 
     /*
@@ -90,5 +90,5 @@ return [
     | When enabled, routes will be available at /queue-monitor
     |
     */
-    'routes' => env('QUEUE_MONITOR_ROUTES', true),
+    'routes' => env('VANTAGE_ROUTES', true),
 ];

@@ -1,14 +1,14 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Console\Commands;
+namespace houdaslassi\Vantage\Console\Commands;
 
 use Illuminate\Console\Command;
-use houdaslassi\QueueMonitor\Models\QueueJobRun;
+use houdaslassi\Vantage\Models\QueueJobRun;
 use Illuminate\Support\Str;
 
 class RetryFailedJob extends Command
 {
-    protected $signature = 'queue-monitor:retry {run_id} {--force : Retry even if payload is not available}';
+    protected $signature = 'vantage:retry {run_id} {--force : Retry even if payload is not available}';
     protected $description = 'Retry a failed job run by ID using stored payload';
 
     public function handle(): int

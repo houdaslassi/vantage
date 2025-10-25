@@ -1,8 +1,8 @@
 <?php
 
-namespace houdaslassi\QueueMonitor\Http\Controllers;
+namespace houdaslassi\Vantage\Http\Controllers;
 
-use houdaslassi\QueueMonitor\Models\QueueJobRun;
+use houdaslassi\Vantage\Models\QueueJobRun;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -113,7 +113,7 @@ class QueueMonitorController extends Controller
             ->take(10)
             ->values();
         
-        return view('queue-monitor::dashboard', compact(
+        return view('vantage::dashboard', compact(
             'stats',
             'recentJobs',
             'jobsByStatus',
@@ -207,7 +207,7 @@ class QueueMonitorController extends Controller
             ->sortByDesc('total')
             ->take(50); // Limit to top 50 tags
         
-        return view('queue-monitor::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
+        return view('vantage::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
     }
     
     /**
@@ -223,7 +223,7 @@ class QueueMonitorController extends Controller
             $retryChain = $this->getRetryChain($job);
         }
         
-        return view('queue-monitor::show', compact('job', 'retryChain'));
+        return view('vantage::show', compact('job', 'retryChain'));
     }
     
     /**
@@ -277,7 +277,7 @@ class QueueMonitorController extends Controller
         // Sort by total count
         uasort($tagStats, fn($a, $b) => $b['total'] <=> $a['total']);
         
-        return view('queue-monitor::tags', compact('tagStats', 'period'));
+        return view('vantage::tags', compact('tagStats', 'period'));
     }
     
     /**
@@ -289,7 +289,7 @@ class QueueMonitorController extends Controller
             ->latest('id')
             ->paginate(50);
         
-        return view('queue-monitor::failed', compact('jobs'));
+        return view('vantage::failed', compact('jobs'));
     }
     
     /**
@@ -304,7 +304,7 @@ class QueueMonitorController extends Controller
         }
         
         // Call the retry command
-        \Artisan::call('queue-monitor:retry', ['run_id' => $id, '--force' => true]);
+        \Artisan::call('vantage:retry', ['run_id' => $id, '--force' => true]);
         
         return back()->with('success', 'Job queued for retry!');
     }
