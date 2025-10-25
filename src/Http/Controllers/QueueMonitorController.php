@@ -146,7 +146,27 @@ class QueueMonitorController extends Controller
             $query->where('queue', $request->queue);
         }
         
-        if ($request->filled('tag')) {
+        // Advanced tag filtering
+        if ($request->filled('tags')) {
+            $tags = is_array($request->tags) ? $request->tags : explode(',', $request->tags);
+            $tags = array_map('trim', $tags);
+            $tags = array_map('strtolower', $tags);
+            
+            if ($request->filled('tag_mode') && $request->tag_mode === 'any') {
+                // Jobs that have ANY of the specified tags
+                $query->where(function($q) use ($tags) {
+                    foreach ($tags as $tag) {
+                        $q->orWhereJsonContains('job_tags', $tag);
+                    }
+                });
+            } else {
+                // Jobs that have ALL of the specified tags (default)
+                foreach ($tags as $tag) {
+                    $query->whereJsonContains('job_tags', $tag);
+                }
+            }
+        } elseif ($request->filled('tag')) {
+            // Single tag filter (backward compatibility)
             $query->whereJsonContains('job_tags', strtolower($request->tag));
         }
         
@@ -163,7 +183,31 @@ class QueueMonitorController extends Controller
         $queues = QueueJobRun::distinct()->pluck('queue')->filter();
         $jobClasses = QueueJobRun::distinct()->pluck('job_class')->map(fn($c) => class_basename($c))->filter();
         
-        return view('queue-monitor::jobs', compact('jobs', 'queues', 'jobClasses'));
+        // Get all available tags with counts
+        $allTags = QueueJobRun::whereNotNull('job_tags')
+            ->get()
+            ->flatMap(function ($job) {
+                return collect($job->job_tags)->map(function ($tag) use ($job) {
+                    return [
+                        'tag' => $tag,
+                        'status' => $job->status,
+                    ];
+                });
+            })
+            ->groupBy('tag')
+            ->map(function ($jobs, $tag) {
+                return [
+                    'tag' => $tag,
+                    'total' => $jobs->count(),
+                    'processed' => $jobs->where('status', 'processed')->count(),
+                    'failed' => $jobs->where('status', 'failed')->count(),
+                    'processing' => $jobs->where('status', 'processing')->count(),
+                ];
+            })
+            ->sortByDesc('total')
+            ->take(50); // Limit to top 50 tags
+        
+        return view('queue-monitor::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
     }
     
     /**

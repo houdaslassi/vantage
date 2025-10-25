@@ -37,9 +37,21 @@
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Tag</label>
-            <input type="text" name="tag" value="{{ request('tag') }}" placeholder="Filter by tag..."
-                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+            <div class="space-y-2">
+                <input type="text" name="tags" value="{{ request('tags') }}" placeholder="Enter tags (comma-separated)..."
+                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <div class="flex gap-2 text-sm">
+                    <label class="flex items-center">
+                        <input type="radio" name="tag_mode" value="all" {{ request('tag_mode', 'all') === 'all' ? 'checked' : '' }} class="mr-1">
+                        <span class="text-gray-600">All tags</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="tag_mode" value="any" {{ request('tag_mode') === 'any' ? 'checked' : '' }} class="mr-1">
+                        <span class="text-gray-600">Any tag</span>
+                    </label>
+                </div>
+            </div>
         </div>
 
         <div class="flex items-end gap-2">
@@ -52,6 +64,26 @@
         </div>
     </form>
 </div>
+
+<!-- Tag Cloud -->
+@if($allTags->isNotEmpty())
+<div class="bg-white shadow rounded-lg p-4 mb-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-3">🏷️ Popular Tags</h3>
+    <div class="flex flex-wrap gap-2">
+        @foreach($allTags as $tagData)
+            <button onclick="addTagToFilter('{{ $tagData['tag'] }}')" 
+                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors
+                           {{ $tagData['failed'] > 0 ? 'bg-red-100 text-red-800 hover:bg-red-200' : 
+                              ($tagData['processed'] > 0 ? 'bg-green-100 text-green-800 hover:bg-green-200' : 
+                              'bg-blue-100 text-blue-800 hover:bg-blue-200') }}">
+                {{ $tagData['tag'] }}
+                <span class="ml-1 text-xs opacity-75">({{ $tagData['total'] }})</span>
+            </button>
+        @endforeach
+    </div>
+    <p class="text-xs text-gray-500 mt-2">Click a tag to add it to your filter</p>
+</div>
+@endif
 
 <!-- Jobs Table -->
 <div class="bg-white shadow rounded-lg overflow-hidden">
@@ -138,5 +170,35 @@
         {{ $jobs->links() }}
     </div>
 @endif
+@endsection
+
+@section('scripts')
+<script>
+function addTagToFilter(tag) {
+    const tagsInput = document.querySelector('input[name="tags"]');
+    const currentTags = tagsInput.value.trim();
+    
+    if (currentTags === '') {
+        tagsInput.value = tag;
+    } else {
+        const tags = currentTags.split(',').map(t => t.trim());
+        if (!tags.includes(tag)) {
+            tagsInput.value = currentTags + ', ' + tag;
+        }
+    }
+    
+    // Auto-submit the form
+    document.querySelector('form').submit();
+}
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + K to focus on tags input
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        document.querySelector('input[name="tags"]').focus();
+    }
+});
+</script>
 @endsection
 
