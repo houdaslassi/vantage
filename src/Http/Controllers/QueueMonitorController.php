@@ -86,6 +86,33 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
         
+        // Top tags
+        $topTags = QueueJobRun::where('created_at', '>', $since)
+            ->whereNotNull('job_tags')
+            ->get()
+            ->flatMap(function ($job) {
+                return collect($job->job_tags)->map(function ($tag) use ($job) {
+                    return [
+                        'tag' => $tag,
+                        'status' => $job->status,
+                        'job_class' => $job->job_class,
+                    ];
+                });
+            })
+            ->groupBy('tag')
+            ->map(function ($jobs, $tag) {
+                return [
+                    'tag' => $tag,
+                    'total' => $jobs->count(),
+                    'failed' => $jobs->where('status', 'failed')->count(),
+                    'processed' => $jobs->where('status', 'processed')->count(),
+                    'processing' => $jobs->where('status', 'processing')->count(),
+                ];
+            })
+            ->sortByDesc('total')
+            ->take(10)
+            ->values();
+        
         return view('queue-monitor::dashboard', compact(
             'stats',
             'recentJobs',
@@ -94,6 +121,7 @@ class QueueMonitorController extends Controller
             'topFailingJobs',
             'topExceptions',
             'slowestJobs',
+            'topTags',
             'period'
         ));
     }

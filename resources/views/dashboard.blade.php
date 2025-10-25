@@ -120,7 +120,43 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Top Tags -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">🏷️ Top Tags</h3>
+            @if($topTags->isEmpty())
+                <p class="text-gray-500 text-center py-4">No tags found</p>
+            @else
+                <div class="space-y-3">
+                    @foreach($topTags as $tagData)
+                        <div class="border rounded-lg p-3 hover:bg-gray-50">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-900 truncate" title="{{ $tagData['tag'] }}">
+                                    {{ Str::limit($tagData['tag'], 20) }}
+                                </span>
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ number_format($tagData['total']) }}
+                                </span>
+                            </div>
+                            <div class="flex gap-2 text-xs">
+                                @if($tagData['processed'] > 0)
+                                    <span class="text-green-600">✅ {{ $tagData['processed'] }}</span>
+                                @endif
+                                @if($tagData['failed'] > 0)
+                                    <span class="text-red-600">❌ {{ $tagData['failed'] }}</span>
+                                @endif
+                                @if($tagData['processing'] > 0)
+                                    <span class="text-yellow-600">⏳ {{ $tagData['processing'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Top Failing Jobs -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
@@ -211,6 +247,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Queue</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
@@ -226,6 +263,24 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $job->queue ?? 'default' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($job->job_tags && count($job->job_tags) > 0)
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach(array_slice($job->job_tags, 0, 3) as $tag)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ Str::limit($tag, 15) }}
+                                            </span>
+                                        @endforeach
+                                        @if(count($job->job_tags) > 3)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                                +{{ count($job->job_tags) - 3 }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 text-xs">No tags</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($job->status === 'processed')
