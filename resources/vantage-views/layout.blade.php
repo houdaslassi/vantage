@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Queue Monitor - @yield('title')</title>
+    <title>Vantage - @yield('title')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         [x-cloak] { display: none !important; }
@@ -17,7 +17,7 @@
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
                         <h1 class="text-xl font-bold text-gray-900">
-                            📊 Queue Monitor
+                            🎯 Vantage
                         </h1>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">

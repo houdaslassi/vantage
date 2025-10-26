@@ -8,7 +8,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">All Jobs</h1>
-            <p class="mt-1 text-sm text-gray-500">Monitor and filter your queue jobs</p>
+            <p class="mt-1 text-sm text-gray-500">Strategic monitoring and filtering of queue jobs</p>
         </div>
         <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-500">{{ $jobs->total() }} total jobs</span>

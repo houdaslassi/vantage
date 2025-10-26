@@ -7,7 +7,7 @@
 <div class="mb-6 flex justify-between items-center">
     <div>
         <h2 class="text-2xl font-bold text-gray-900">Dashboard</h2>
-        <p class="text-sm text-gray-500 mt-1">Real-time queue job monitoring</p>
+        <p class="text-sm text-gray-500 mt-1">Strategic queue monitoring and observability</p>
     </div>
     <div class="flex gap-3 items-center">
         <button onclick="location.reload()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">

@@ -248,6 +248,7 @@ class QueueMonitorController extends Controller
                         'total' => 0,
                         'processed' => 0,
                         'failed' => 0,
+                        'processing' => 0,
                         'durations' => [],
                     ];
                 }
