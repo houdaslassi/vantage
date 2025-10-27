@@ -6,6 +6,7 @@ use houdaslassi\Vantage\Models\QueueJobRun;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class QueueMonitorController extends Controller
 {
@@ -16,7 +17,7 @@ class QueueMonitorController extends Controller
     {
         $period = $request->get('period', '30d'); // Changed default to 30 days
         $since = $this->getSinceDate($period);
-        
+
         // Overall statistics
         $stats = [
             'total' => QueueJobRun::where('created_at', '>', $since)->count(),
@@ -29,25 +30,25 @@ class QueueMonitorController extends Controller
                 ->whereNotNull('duration_ms')
                 ->avg('duration_ms'),
         ];
-        
+
         // Calculate success rate based on completed jobs only (processed + failed)
         $completedJobs = $stats['processed'] + $stats['failed'];
-        $stats['success_rate'] = $completedJobs > 0 
-            ? round(($stats['processed'] / $completedJobs) * 100, 1) 
+        $stats['success_rate'] = $completedJobs > 0
+            ? round(($stats['processed'] / $completedJobs) * 100, 1)
             : 0;
-        
+
         // Recent jobs
         $recentJobs = QueueJobRun::latest('id')
             ->limit(20)
             ->get();
-        
+
         // Jobs by status (for chart)
         $jobsByStatus = QueueJobRun::select('status', DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->groupBy('status')
             ->get()
             ->pluck('count', 'status');
-        
+
         // Jobs by hour (for trend chart)
         $jobsByHour = QueueJobRun::select(
                 DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour'),
@@ -58,7 +59,7 @@ class QueueMonitorController extends Controller
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
-        
+
         // Top failing jobs
         $topFailingJobs = QueueJobRun::select('job_class', DB::raw('count(*) as failure_count'))
             ->where('created_at', '>', $since)
@@ -67,7 +68,7 @@ class QueueMonitorController extends Controller
             ->orderByDesc('failure_count')
             ->limit(5)
             ->get();
-        
+
         // Top exceptions
         $topExceptions = QueueJobRun::select('exception_class', DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
@@ -76,7 +77,7 @@ class QueueMonitorController extends Controller
             ->orderByDesc('count')
             ->limit(5)
             ->get();
-        
+
         // Slowest jobs
         $slowestJobs = QueueJobRun::select('job_class', DB::raw('AVG(duration_ms) as avg_duration'), DB::raw('MAX(duration_ms) as max_duration'), DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
@@ -85,7 +86,7 @@ class QueueMonitorController extends Controller
             ->orderByDesc('avg_duration')
             ->limit(5)
             ->get();
-        
+
         // Top tags
         $topTags = QueueJobRun::where('created_at', '>', $since)
             ->whereNotNull('job_tags')
@@ -112,7 +113,7 @@ class QueueMonitorController extends Controller
             ->sortByDesc('total')
             ->take(10)
             ->values();
-        
+
         return view('vantage::dashboard', compact(
             'stats',
             'recentJobs',
@@ -125,33 +126,33 @@ class QueueMonitorController extends Controller
             'period'
         ));
     }
-    
+
     /**
      * Jobs list with filtering
      */
     public function jobs(Request $request)
     {
         $query = QueueJobRun::query();
-        
+
         // Apply filters
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         if ($request->filled('job_class')) {
             $query->where('job_class', 'like', '%' . $request->job_class . '%');
         }
-        
+
         if ($request->filled('queue')) {
             $query->where('queue', $request->queue);
         }
-        
+
         // Advanced tag filtering
         if ($request->filled('tags')) {
             $tags = is_array($request->tags) ? $request->tags : explode(',', $request->tags);
             $tags = array_map('trim', $tags);
             $tags = array_map('strtolower', $tags);
-            
+
             if ($request->filled('tag_mode') && $request->tag_mode === 'any') {
                 // Jobs that have ANY of the specified tags
                 $query->where(function($q) use ($tags) {
@@ -169,20 +170,20 @@ class QueueMonitorController extends Controller
             // Single tag filter (backward compatibility)
             $query->whereJsonContains('job_tags', strtolower($request->tag));
         }
-        
+
         if ($request->filled('since')) {
             $query->where('created_at', '>', $request->since);
         }
-        
+
         // Get jobs
         $jobs = $query->latest('id')
             ->paginate(50)
             ->withQueryString();
-        
+
         // Get filter options
         $queues = QueueJobRun::distinct()->pluck('queue')->filter();
         $jobClasses = QueueJobRun::distinct()->pluck('job_class')->map(fn($c) => class_basename($c))->filter();
-        
+
         // Get all available tags with counts
         $allTags = QueueJobRun::whereNotNull('job_tags')
             ->get()
@@ -206,26 +207,26 @@ class QueueMonitorController extends Controller
             })
             ->sortByDesc('total')
             ->take(50); // Limit to top 50 tags
-        
+
         return view('vantage::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
     }
-    
+
     /**
      * Job details
      */
     public function show($id)
     {
         $job = QueueJobRun::findOrFail($id);
-        
+
         // Get retry chain
         $retryChain = [];
         if ($job->retried_from_id) {
             $retryChain = $this->getRetryChain($job);
         }
-        
+
         return view('vantage::show', compact('job', 'retryChain'));
     }
-    
+
     /**
      * Tags statistics
      */
@@ -233,12 +234,12 @@ class QueueMonitorController extends Controller
     {
         $period = $request->get('period', '7d');
         $since = $this->getSinceDate($period);
-        
+
         // Get all jobs with tags
         $jobs = QueueJobRun::whereNotNull('job_tags')
             ->where('created_at', '>', $since)
             ->get();
-        
+
         // Calculate tag statistics
         $tagStats = [];
         foreach ($jobs as $job) {
@@ -252,35 +253,35 @@ class QueueMonitorController extends Controller
                         'durations' => [],
                     ];
                 }
-                
+
                 $tagStats[$tag]['total']++;
                 $tagStats[$tag][$job->status]++;
-                
+
                 if ($job->duration_ms) {
                     $tagStats[$tag]['durations'][] = $job->duration_ms;
                 }
             }
         }
-        
+
         // Calculate averages and success rates
         foreach ($tagStats as $tag => &$stats) {
-            $stats['avg_duration'] = !empty($stats['durations']) 
+            $stats['avg_duration'] = !empty($stats['durations'])
                 ? round(array_sum($stats['durations']) / count($stats['durations']), 2)
                 : 0;
-            
+
             $stats['success_rate'] = $stats['total'] > 0
                 ? round(($stats['processed'] / $stats['total']) * 100, 1)
                 : 0;
-            
+
             unset($stats['durations']);
         }
-        
+
         // Sort by total count
         uasort($tagStats, fn($a, $b) => $b['total'] <=> $a['total']);
-        
+
         return view('vantage::tags', compact('tagStats', 'period'));
     }
-    
+
     /**
      * Failed jobs
      */
@@ -289,17 +290,17 @@ class QueueMonitorController extends Controller
         $jobs = QueueJobRun::where('status', 'failed')
             ->latest('id')
             ->paginate(50);
-        
+
         return view('vantage::failed', compact('jobs'));
     }
-    
+
     /**
      * Retry a job - simple and works for all cases
      */
     public function retry($id)
     {
         $run = QueueJobRun::findOrFail($id);
-        
+
         if ($run->status !== 'failed') {
             return back()->with('error', 'Only failed jobs can be retried.');
         }
@@ -313,7 +314,7 @@ class QueueMonitorController extends Controller
         try {
             // Simple: Just unserialize the original job from Laravel's payload
             $job = $this->restoreJobFromPayload($run);
-            
+
             if (!$job) {
                 return back()->with('error', 'Unable to restore job. Payload might be missing or corrupted.');
             }
@@ -325,15 +326,15 @@ class QueueMonitorController extends Controller
             dispatch($job)
                 ->onQueue($run->queue ?? 'default')
                 ->onConnection($run->connection ?? config('queue.default'));
-            
+
             return back()->with('success', "✓ Job queued for retry!");
-            
+
         } catch (\Throwable $e) {
             \Log::error('Vantage: Retry failed', [
                 'job_id' => $id,
                 'error' => $e->getMessage()
             ]);
-            
+
             return back()->with('error', "Retry failed: " . $e->getMessage());
         }
     }
@@ -350,24 +351,38 @@ class QueueMonitorController extends Controller
 
         try {
             $payload = json_decode($run->payload, true);
-            
+
             // Get the serialized command from Laravel's raw payload
             $serialized = $payload['raw_payload']['data']['command'] ?? null;
-            
+
             if (!$serialized) {
+                \Log::warning('Vantage: No serialized command in payload', ['run_id' => $run->id]);
                 return null;
             }
 
             // Unserialize it - Laravel stored it this way originally
-            $job = @unserialize($serialized, ['allowed_classes' => true]);
-            
-            return is_object($job) ? $job : null;
-            
+            $job = unserialize($serialized, ['allowed_classes' => true]);
+
+            if (!is_object($job)) {
+                \Log::warning('Vantage: Unserialize did not return object', [
+                    'run_id' => $run->id,
+                    'result_type' => gettype($job)
+                ]);
+                return null;
+            }
+
+            \Log::info('Vantage: Successfully restored job', [
+                'run_id' => $run->id,
+                'job_class' => get_class($job)
+            ]);
+
+            return $job;
+
         } catch (\Throwable $e) {
             return null;
         }
     }
-    
+
     /**
      * Get retry chain
      */
@@ -375,15 +390,15 @@ class QueueMonitorController extends Controller
     {
         $chain = [];
         $current = $job->retriedFrom;
-        
+
         while ($current) {
             $chain[] = $current;
             $current = $current->retriedFrom;
         }
-        
+
         return array_reverse($chain);
     }
-    
+
     /**
      * Get since date from period string
      */
