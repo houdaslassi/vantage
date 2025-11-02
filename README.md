@@ -1,93 +1,84 @@
-# Queue Monitor (WIP)
+# Vantage
 
-A Laravel package for **tracking and monitoring queued jobs**.  
-It extends Laravel’s built-in queue system by adding richer job tracking, failure details, notifications, and retry support.
+A Laravel package that tracks and monitors your queue jobs. Automatically records job execution history, failures, retries, and provides a simple web interface to view everything.
 
----
-
-## 📦 Features Implemented So Far
-
-### 1. Job Run Tracking
-Every job is tracked in a dedicated table: **`queue_job_runs`**.  
-When jobs are dispatched, we automatically log:
-
-- `uuid` – unique job identifier
-- `job_class` – the job’s class name
-- `queue` – which queue the job was dispatched to
-- `connection` – which connection was used
-- `attempt` – the attempt count
-- `status` – `processing`, `processed`, or `failed`
-- `started_at`, `finished_at`, `duration_ms` – for timing analysis
-
-👉 This gives you a **per-job execution history**, not just failures.
-
----
-
-### 2. Failure Recording with Exception Details
-When a job fails, we store:
-
-- `exception_class`
-- `exception_message`
-- `stack` trace
-- `finished_at` timestamp
-
-This makes debugging **much faster** compared to Laravel’s default `failed_jobs` table.
-
----
-
-### 3. Notifications on Failure
-When a job fails, the package can send notifications through:
-
-- **Email** (configurable recipient)
-- **Slack webhook** (configurable URL)
-
-You can configure this in `config/queue-monitor.php`:
-
-```php
-'notify' => [
-    'email' => env('QUEUE_MONITOR_NOTIFY_EMAIL'),
-    'slack_webhook' => env('QUEUE_MONITOR_NOTIFY_SLACK'),
-],
-```
-
----
-
-### 4. Retry Failed Jobs
-
-You can retry a failed job run directly:
+## Installation
 
 ```bash
-php artisan queue-monitor:retry {run_id}
+composer require houdaslassi/vantage
 ```
 
-**What this does:**
+The package will automatically register itself and run migrations.
 
-- Creates a new job instance of the same class
-- Marks it as retried from the original run (`retried_from_id`)
-- Links retries so you can see which run came from which failure
+## Features
 
-This is more developer-friendly than the default `queue:retry`, since it's tied into job run history.
+### Job Tracking
 
----
+Every job gets tracked in the `queue_job_runs` table with:
+- Job class, queue, connection
+- Status (processing, processed, failed)
+- Start/finish times and duration
+- UUID for tracking across retries
 
-## 🗂 Database Schema (simplified)
+### Failure Details
 
-```sql
-queue_job_runs
----------------
-id
-uuid
-job_class
-queue
-connection
-attempt
-status
-started_at
-finished_at
-duration_ms
-exception_class
-exception_message
-stack
-retries
-retried_from_id
-timestamps
+When jobs fail, we store the exception class, message, and full stack trace. Much easier to debug than Laravel's default failed_jobs table.
+
+### Web Interface
+
+Visit `/vantage` to see:
+- Dashboard with stats and charts
+- List of all jobs with filtering
+- Individual job details with retry chains
+- Failed jobs page
+
+### Retry Failed Jobs
+
+```bash
+php artisan vantage:retry {job_id}
+```
+
+Or use the web interface - just click retry on any failed job.
+
+### Job Tagging
+
+Jobs with tags (using Laravel's `tags()` method) are automatically tracked. Filter and view jobs by tag in the web interface.
+
+## Configuration
+
+Publish the config file:
+
+```bash
+php artisan vendor:publish --tag=vantage-config
+```
+
+Main settings:
+- `store_payload` - Whether to store job payloads (for debugging/retry)
+- `redact_keys` - Keys to redact from payloads (password, token, etc.)
+- `retention_days` - How long to keep job history
+- `notify.email` - Email to notify on failures
+- `notify.slack_webhook` - Slack webhook URL for failures
+
+## Testing
+
+Run the test suite:
+
+```bash
+composer test
+```
+
+Generate test jobs for load testing:
+
+```bash
+php artisan vantage:generate-test-jobs --count=1000 --success-rate=80
+```
+
+## Commands
+
+- `vantage:retry {id}` - Retry a failed job
+- `vantage:generate-test-jobs` - Generate test jobs for load testing
+- `vantage:cleanup-stuck` - Clean up jobs stuck in processing state
+
+## License
+
+MIT
