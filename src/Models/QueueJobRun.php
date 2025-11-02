@@ -15,6 +15,15 @@ class QueueJobRun extends Model
         'finished_at' => 'datetime',
         'job_tags'    => 'array',
         'payload'     => 'array',
+        // Telemetry numeric casts
+        'duration_ms' => 'integer',
+        'memory_start_bytes' => 'integer',
+        'memory_end_bytes' => 'integer',
+        'memory_peak_start_bytes' => 'integer',
+        'memory_peak_end_bytes' => 'integer',
+        'memory_peak_delta_bytes' => 'integer',
+        'cpu_user_ms' => 'integer',
+        'cpu_sys_ms' => 'integer',
     ];
 
     /**
