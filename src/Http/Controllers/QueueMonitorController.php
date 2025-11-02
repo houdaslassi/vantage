@@ -3,6 +3,7 @@
 namespace houdaslassi\Vantage\Http\Controllers;
 
 use houdaslassi\Vantage\Models\QueueJobRun;
+use houdaslassi\Vantage\Support\QueueDepthChecker;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -51,15 +52,30 @@ class QueueMonitorController extends Controller
             ->pluck('count', 'status');
 
         // Jobs by hour (for trend chart)
-        $jobsByHour = QueueJobRun::select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour'),
-                DB::raw('count(*) as count'),
-                DB::raw('sum(case when status = "failed" then 1 else 0 end) as failed_count')
-            )
-            ->where('created_at', '>', $since)
-            ->groupBy('hour')
-            ->orderBy('hour')
-            ->get();
+        // Use database-agnostic approach
+        $dbDriver = DB::getDriverName();
+        if ($dbDriver === 'mysql' || $dbDriver === 'mariadb') {
+            $jobsByHour = QueueJobRun::select(
+                    DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour'),
+                    DB::raw('count(*) as count'),
+                    DB::raw('sum(case when status = "failed" then 1 else 0 end) as failed_count')
+                )
+                ->where('created_at', '>', $since)
+                ->groupBy('hour')
+                ->orderBy('hour')
+                ->get();
+        } else {
+            // SQLite and PostgreSQL compatible
+            $jobsByHour = QueueJobRun::select(
+                    DB::raw("strftime('%Y-%m-%d %H:00:00', created_at) as hour"),
+                    DB::raw('count(*) as count'),
+                    DB::raw('sum(case when status = "failed" then 1 else 0 end) as failed_count')
+                )
+                ->where('created_at', '>', $since)
+                ->groupBy('hour')
+                ->orderBy('hour')
+                ->get();
+        }
 
         // Top failing jobs
         $topFailingJobs = QueueJobRun::select('job_class', DB::raw('count(*) as failure_count'))
@@ -124,6 +140,22 @@ class QueueMonitorController extends Controller
                 ->get();
         }
 
+        // Queue depths (real-time)
+        try {
+            $queueDepths = QueueDepthChecker::getQueueDepthWithMetadataAlways();
+        } catch (\Throwable $e) {
+            Log::warning('Failed to get queue depths', ['error' => $e->getMessage()]);
+            // Always show at least one queue entry even on error
+            $queueDepths = [
+                'default' => [
+                    'depth' => 0,
+                    'driver' => config('queue.default', 'unknown'),
+                    'connection' => config('queue.default', 'unknown'),
+                    'status' => 'healthy',
+                ]
+            ];
+        }
+
         return view('vantage::dashboard', compact(
             'stats',
             'recentJobs',
@@ -134,6 +166,7 @@ class QueueMonitorController extends Controller
             'slowestJobs',
             'topTags',
             'recentBatches',
+            'queueDepths',
             'period'
         ));
     }
