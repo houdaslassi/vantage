@@ -44,6 +44,28 @@ Or use the web interface - just click retry on any failed job.
 
 Jobs with tags (using Laravel's `tags()` method) are automatically tracked. Filter and view jobs by tag in the web interface.
 
+### Queue Depth Monitoring
+
+Real-time queue depth tracking for all your queues. See how many jobs are pending in each queue with health status indicators.
+
+Visit `/vantage` to see queue depths displayed with:
+- Current pending job count per queue
+- Health status (healthy/normal/warning/critical)
+- Support for database and Redis queue drivers
+
+### Performance Telemetry
+
+Automatic tracking of job performance metrics:
+- **Memory usage**: Start, end, peak memory, and memory delta
+- **CPU usage**: User and system CPU time (milliseconds)
+
+Configurable via `config/vantage.php`:
+- Enable/disable telemetry
+- Sampling rate (reduce overhead)
+- Optional CPU capture
+
+Note: Run the migration to add telemetry columns: `php artisan migrate`
+
 ## Configuration
 
 Publish the config file:
@@ -58,6 +80,9 @@ Main settings:
 - `retention_days` - How long to keep job history
 - `notify.email` - Email to notify on failures
 - `notify.slack_webhook` - Slack webhook URL for failures
+- `telemetry.enabled` - Enable performance telemetry (memory/CPU)
+- `telemetry.sample_rate` - Sampling rate (0.0-1.0, default: 1.0)
+- `telemetry.capture_cpu` - Enable CPU time tracking
 
 ## Testing
 
