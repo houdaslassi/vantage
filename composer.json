@@ -32,7 +32,7 @@
     }
   },
   "scripts": {
-    "test": "pest -p",
+    "test": "pest",
     "lint": "php -l src"
   },
   "config": {

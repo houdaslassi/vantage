@@ -1,8 +1,24 @@
+# Dependencies
 /vendor/
-/composer.lock
-/.phpunit.result.cache
-/.idea/
-/.php-cs-fixer.cache
-/.DS_Store
-/.vscode/
-.stashed-features/
+/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.phpstorm.meta.php
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.phpunit.result.cache
+.pest.xml
+
+# Local docs (keep these out)
+# RELEASE.md - internal release guide
+# TODO.md - internal notes
+# TAG_LOGIC_MAP.md - internal
+# USAGE_EXAMPLES.md - internal
