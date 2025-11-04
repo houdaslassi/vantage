@@ -169,3 +169,39 @@ it('filters by status scope', function () {
         ->and(QueueJobRun::processing()->count())->toBe(1);
 });
 
+it('casts telemetry fields to integers', function () {
+    $job = makeJob([
+        'uuid' => 'test-telemetry',
+        'duration_ms' => '500',
+        'memory_start_bytes' => '1048576',
+        'memory_end_bytes' => '2097152',
+        'memory_peak_start_bytes' => '1048576',
+        'memory_peak_end_bytes' => '3145728',
+        'memory_peak_delta_bytes' => '2097152',
+        'cpu_user_ms' => '100',
+        'cpu_sys_ms' => '50',
+    ]);
+
+    expect($job->duration_ms)->toBeInt()->toBe(500)
+        ->and($job->memory_start_bytes)->toBeInt()->toBe(1048576)
+        ->and($job->memory_end_bytes)->toBeInt()->toBe(2097152)
+        ->and($job->memory_peak_start_bytes)->toBeInt()->toBe(1048576)
+        ->and($job->memory_peak_end_bytes)->toBeInt()->toBe(3145728)
+        ->and($job->memory_peak_delta_bytes)->toBeInt()->toBe(2097152)
+        ->and($job->cpu_user_ms)->toBeInt()->toBe(100)
+        ->and($job->cpu_sys_ms)->toBeInt()->toBe(50);
+});
+
+it('handles null telemetry fields', function () {
+    $job = makeJob([
+        'uuid' => 'test-null-telemetry',
+        'duration_ms' => null,
+        'memory_start_bytes' => null,
+        'cpu_user_ms' => null,
+    ]);
+
+    expect($job->duration_ms)->toBeNull()
+        ->and($job->memory_start_bytes)->toBeNull()
+        ->and($job->cpu_user_ms)->toBeNull();
+});
+
