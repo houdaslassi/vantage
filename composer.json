@@ -39,11 +39,5 @@
     "allow-plugins": {
       "pestphp/pest-plugin": true
     }
-  },
-  "repositories": {
-    "queue-monitor": {
-      "type": "path",
-      "url": "../queue-monitor"
-    }
   }
 }
