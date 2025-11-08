@@ -56,6 +56,15 @@ Or use the web interface - just click retry on any failed job.
 
 Jobs with tags (using Laravel's `tags()` method) are automatically tracked. Filter and view jobs by tag in the web interface.
 
+### Queue Depth Monitoring
+
+Real-time queue depth tracking for all your queues. See how many jobs are pending in each queue with health status indicators.
+
+Visit `/vantage` to see queue depths displayed with:
+- Current pending job count per queue
+- Health status (healthy/normal/warning/critical)
+- Support for database and Redis queue drivers
+
 ### Performance Telemetry
 
 Vantage automatically tracks performance metrics for your jobs:
