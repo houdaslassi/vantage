@@ -124,9 +124,16 @@ return [
     | Authentication
     |--------------------------------------------------------------------------
     |
-    | Configure authentication for the Vantage dashboard.
-    | When enabled, routes will be protected by Laravel's default 'auth' middleware.
-    | Users must be authenticated to access the dashboard.
+    | Configure authentication for the Vantage dashboard (similar to Horizon).
+    | When enabled, routes will be protected using a gate authorization check.
+    |
+    | By default, all authenticated users can access Vantage. You can customize
+    | the authorization logic by overriding the 'viewVantage' gate in your
+    | AppServiceProvider:
+    |
+    | Gate::define('viewVantage', function ($user) {
+    |     return $user->isAdmin(); // or your custom logic
+    | });
     |
     | Set to false to disable authentication (not recommended for production).
     |

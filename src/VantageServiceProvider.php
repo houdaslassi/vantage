@@ -5,6 +5,7 @@ namespace houdaslassi\Vantage;
 use houdaslassi\Vantage\Console\Commands\RetryFailedJob;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
@@ -32,6 +33,23 @@ class VantageServiceProvider extends ServiceProvider
                 //Console\Commands\TagStats::class,
             ]);
         }
+
+        // Register authorization gate (like Horizon)
+        Gate::define('viewVantage', function ($user = null) {
+            // If auth is disabled, allow access
+            if (!config('vantage.auth.enabled', true)) {
+                return true;
+            }
+
+            // If no user, deny access
+            if (!$user) {
+                return false;
+            }
+
+            // Allow all authenticated users by default
+            // Users can customize this in their AppServiceProvider
+            return true;
+        });
 
         // Load our migrations automatically
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
