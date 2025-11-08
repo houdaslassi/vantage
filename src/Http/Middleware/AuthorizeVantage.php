@@ -4,6 +4,7 @@ namespace houdaslassi\Vantage\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,9 +22,15 @@ class AuthorizeVantage
             return $next($request);
         }
 
+        // Check if user is authenticated (try default guard first, then web guard)
+        $user = Auth::user() ?? Auth::guard('web')->user();
+        
+        if (!$user) {
+            abort(401, 'Unauthenticated. Please log in to access Vantage dashboard.');
+        }
+
         // Check authorization via gate (like Horizon)
-        // Gate will automatically receive the authenticated user
-        if (!Gate::allows('viewVantage')) {
+        if (!Gate::forUser($user)->allows('viewVantage')) {
             abort(403, 'Unauthorized access to Vantage dashboard.');
         }
 
