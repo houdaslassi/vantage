@@ -10,6 +10,16 @@ class QueueJobRun extends Model
 
     protected static $unguarded = true;
 
+    /**
+     * Get the database connection for the model.
+     *
+     * @return string|null
+     */
+    public function getConnectionName()
+    {
+        return config('vantage.database_connection') ?? parent::getConnectionName();
+    }
+
     protected $casts = [
         'started_at'  => 'datetime',
         'finished_at' => 'datetime',

@@ -6,9 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
 
+    /**
+     * Get the database connection for the migration.
+     *
+     * @return string|null
+     */
+    public function getConnection()
+    {
+        return config('vantage.database_connection');
+    }
+
     public function up(): void
     {
-        Schema::table('queue_job_runs', function (Blueprint $table) {
+        $connection = $this->getConnection();
+        $schema = $connection ? Schema::connection($connection) : Schema;
+
+        $schema->table('queue_job_runs', function (Blueprint $table) {
             // Memory metrics (bytes)
             $table->unsignedBigInteger('memory_start_bytes')->nullable()->after('duration_ms');
             $table->unsignedBigInteger('memory_end_bytes')->nullable()->after('memory_start_bytes');
@@ -24,7 +37,10 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::table('queue_job_runs', function (Blueprint $table) {
+        $connection = $this->getConnection();
+        $schema = $connection ? Schema::connection($connection) : Schema;
+
+        $schema->table('queue_job_runs', function (Blueprint $table) {
             $table->dropColumn([
                 'memory_start_bytes',
                 'memory_end_bytes',

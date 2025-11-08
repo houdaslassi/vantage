@@ -6,9 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
 
+    /**
+     * Get the database connection for the migration.
+     *
+     * @return string|null
+     */
+    public function getConnection()
+    {
+        return config('vantage.database_connection');
+    }
+
     public function up(): void
     {
-        Schema::create('queue_job_runs', function (Blueprint $table) {
+        $connection = $this->getConnection();
+        $schema = $connection ? Schema::connection($connection) : Schema;
+
+        $schema->create('queue_job_runs', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->index();
             $table->string('job_class')->index();
@@ -34,6 +47,9 @@ return new class extends Migration {
 
     public function down(): void
     {
-        Schema::dropIfExists('queue_job_runs');
+        $connection = $this->getConnection();
+        $schema = $connection ? Schema::connection($connection) : Schema;
+
+        $schema->dropIfExists('queue_job_runs');
     }
 };
