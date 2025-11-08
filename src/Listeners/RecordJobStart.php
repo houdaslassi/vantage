@@ -15,6 +15,11 @@ class RecordJobStart
 
     public function handle(JobProcessing $event): void
     {
+        // Master switch: if package is disabled, don't track anything
+        if (!config('vantage.enabled', true)) {
+            return;
+        }
+
         $uuid = $this->bestUuid($event);
 
         // Telemetry config & sampling
@@ -49,12 +54,17 @@ class RecordJobStart
         }
 
         $payloadJson = PayloadExtractor::getPayload($event);
+        $jobClass = $this->jobClass($event);
+        $queue = $event->job->getQueue();
+        $connection = $event->connectionName ?? null;
 
+        // Always create a new record on job start
+        // The UUID will be used by Success/Failure listeners to find and update this record
         QueueJobRun::create([
             'uuid'             => $uuid,
-            'job_class'        => $this->jobClass($event),
-            'queue'            => $event->job->getQueue(),
-            'connection'       => $event->connectionName ?? null,
+            'job_class'        => $jobClass,
+            'queue'            => $queue,
+            'connection'       => $connection,
             'attempt'          => $event->job->attempts(),
             'status'           => 'processing',
             'started_at'       => now(),

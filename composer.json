@@ -32,18 +32,12 @@
     }
   },
   "scripts": {
-    "test": "pest -p",
+    "test": "pest",
     "lint": "php -l src"
   },
   "config": {
     "allow-plugins": {
       "pestphp/pest-plugin": true
-    }
-  },
-  "repositories": {
-    "queue-monitor": {
-      "type": "path",
-      "url": "../queue-monitor"
     }
   }
 }

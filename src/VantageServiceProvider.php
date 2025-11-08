@@ -20,10 +20,15 @@ class VantageServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // publish the config file
+        // Always publish config file (needed for configuration)
         $this->publishes([
             __DIR__.'/../config/vantage.php' => config_path('vantage.php'),
         ], 'vantage-config');
+
+        // Master switch: if package is disabled, don't register anything
+        if (!config('vantage.enabled', true)) {
+            return;
+        }
 
         if ($this->app->runningInConsole()) {
             $this->commands([

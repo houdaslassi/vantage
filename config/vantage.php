@@ -3,6 +3,19 @@
 return [
     /*
     |--------------------------------------------------------------------------
+    | Enable/Disable Package
+    |--------------------------------------------------------------------------
+    |
+    | Master switch to enable or disable the entire Vantage package.
+    | When disabled, no job tracking, routes, or listeners will be active.
+    | Useful for testing in staging without affecting production, or
+    | temporarily disabling monitoring.
+    |
+    */
+    'enabled' => env('VANTAGE_ENABLED', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Store Payload
     |--------------------------------------------------------------------------
     |

@@ -80,6 +80,25 @@ php artisan vendor:publish --tag=vantage-config
 - `retention_days` - How long to keep job history
 - `notify.email` - Email to notify on failures
 - `notify.slack_webhook` - Slack webhook URL for failures
+- `telemetry.enabled` - Enable performance telemetry (memory/CPU)
+- `telemetry.sample_rate` - Sampling rate (0.0-1.0, default: 1.0)
+- `telemetry.capture_cpu` - Enable CPU time tracking
+
+### Enable/Disable Package
+
+To disable the package entirely (useful for staging environments):
+
+```env
+VANTAGE_ENABLED=false
+```
+
+When disabled:
+- No job tracking occurs
+- Routes are not registered
+- Listeners are not active
+- No database writes
+
+Perfect for testing in staging without affecting production data!
 
 ### Multi-Database Support
 

@@ -3,6 +3,7 @@
 namespace houdaslassi\Vantage\Http\Controllers;
 
 use houdaslassi\Vantage\Models\QueueJobRun;
+use houdaslassi\Vantage\Support\QueueDepthChecker;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -140,6 +141,22 @@ class QueueMonitorController extends Controller
                 ->get();
         }
 
+        // Queue depths (real-time)
+        try {
+            $queueDepths = QueueDepthChecker::getQueueDepthWithMetadataAlways();
+        } catch (\Throwable $e) {
+            Log::warning('Failed to get queue depths', ['error' => $e->getMessage()]);
+            // Always show at least one queue entry even on error
+            $queueDepths = [
+                'default' => [
+                    'depth' => 0,
+                    'driver' => config('queue.default', 'unknown'),
+                    'connection' => config('queue.default', 'unknown'),
+                    'status' => 'healthy',
+                ]
+            ];
+        }
+
         return view('vantage::dashboard', compact(
             'stats',
             'recentJobs',
@@ -150,6 +167,7 @@ class QueueMonitorController extends Controller
             'slowestJobs',
             'topTags',
             'recentBatches',
+            'queueDepths',
             'period'
         ));
     }

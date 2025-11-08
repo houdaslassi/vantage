@@ -110,6 +110,53 @@
     </div>
 </div>
 
+<!-- Queue Depths -->
+<div class="bg-white shadow rounded-lg mb-8 p-6">
+    <h3 class="text-lg font-medium text-gray-900 mb-4">📊 Queue Depths (Real-time)</h3>
+    @if(!empty($queueDepths))
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($queueDepths as $queueName => $queueInfo)
+            <div class="border rounded-lg p-4 {{ $queueInfo['status'] === 'critical' ? 'border-red-300 bg-red-50' : ($queueInfo['status'] === 'warning' ? 'border-yellow-300 bg-yellow-50' : ($queueInfo['status'] === 'normal' ? 'border-blue-300 bg-blue-50' : 'border-green-300 bg-green-50')) }}">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">{{ $queueName ?: 'default' }}</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($queueInfo['depth']) }}</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            {{ ucfirst($queueInfo['status']) }}
+                            @if(isset($queueInfo['driver']) && $queueInfo['driver'])
+                                · {{ $queueInfo['driver'] }}
+                            @endif
+                        </p>
+                    </div>
+                    <div class="text-3xl">
+                        @if($queueInfo['status'] === 'critical')
+                            🔴
+                        @elseif($queueInfo['status'] === 'warning')
+                            🟡
+                        @elseif($queueInfo['status'] === 'normal')
+                            🟢
+                        @else
+                            ✅
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    @else
+        <div class="text-center py-8">
+            <p class="text-sm text-gray-500 mb-2">No queue depths available</p>
+            <p class="text-xs text-gray-400">
+                @if(config('queue.default') === 'sync')
+                    Queue depth is not available for the 'sync' driver (jobs run immediately)
+                @else
+                    No pending jobs found or queue driver may not be supported
+                @endif
+            </p>
+        </div>
+    @endif
+</div>
+
 <!-- Success Rate Trend Chart -->
 <div class="bg-white shadow rounded-lg mb-8">
     <div class="px-4 py-5 sm:p-6">

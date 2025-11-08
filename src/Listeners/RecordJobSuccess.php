@@ -18,23 +18,37 @@ class RecordJobSuccess
 
     public function handle(JobProcessed $event): void
     {
+        // Master switch: if package is disabled, don't track anything
+        if (!config('vantage.enabled', true)) {
+            return;
+        }
+
         $uuid = $this->bestUuid($event);
         $jobClass = $this->jobClass($event);
         $queue = $event->job->getQueue();
         $connection = $event->connectionName ?? null;
 
-        // Try to find by UUID first (most reliable)
-        $row = QueueJobRun::where('uuid', $uuid)
-            ->where('status', 'processing')
-            ->first();
+        // Try to find existing processing record
+        $row = null;
+        
+        // First, try by stable UUID if available (most reliable)
+        $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid()) 
+                      || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
+        
+        if ($hasStableUuid) {
+            $row = QueueJobRun::where('uuid', $uuid)
+                ->where('status', 'processing')
+                ->first();
+        }
 
-        // Fallback: try by job class, queue, connection (for recently created jobs)
-        if (!$row) {
+        // Fallback: try by job class, queue, connection (ONLY if UUID not available)
+        // This should rarely be needed since Laravel 8+ provides uuid()
+        if (!$row && !$hasStableUuid) {
             $row = QueueJobRun::where('job_class', $jobClass)
                 ->where('queue', $queue)
                 ->where('connection', $connection)
                 ->where('status', 'processing')
-                ->where('created_at', '>', now()->subMinute()) // Only very recent
+                ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
                 ->orderByDesc('id')
                 ->first();
         }
