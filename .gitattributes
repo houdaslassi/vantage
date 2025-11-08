@@ -1,0 +1,20 @@
+# Exclude screenshots from Composer exports
+# Screenshots are kept in repo for GitHub README but not distributed via Composer
+screenshots/ export-ignore
+
+# Exclude internal documentation from Composer exports
+RELEASE.md export-ignore
+HOW_TO_RELEASE.md export-ignore
+TODO.md export-ignore
+TAG_LOGIC_MAP.md export-ignore
+USAGE_EXAMPLES.md export-ignore
+PR_DESCRIPTION.md export-ignore
+.stashed-features/ export-ignore
+
+# Exclude test files from Composer exports (they're in require-dev anyway)
+tests/ export-ignore
+
+# Exclude development files
+gpg-batch-config.txt export-ignore
+gpg-public-key.txt export-ignore
+

@@ -16,9 +16,9 @@
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-bold text-gray-900">
+                        <a href="{{ route('vantage.dashboard') }}" class="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors">
                             🎯 Vantage
-                        </h1>
+                        </a>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                         <a href="{{ route('vantage.dashboard') }}" 

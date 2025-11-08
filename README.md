@@ -33,6 +33,8 @@ Every job gets tracked in the `queue_job_runs` table with:
 
 When jobs fail, we store the exception class, message, and full stack trace. Much easier to debug than Laravel's default failed_jobs table.
 
+![Failed Jobs](screenshots/vantage_04.png)
+
 ### Web Interface
 
 Visit `/vantage` to see:
@@ -41,6 +43,16 @@ Visit `/vantage` to see:
 - Individual job details with retry chains
 - Failed jobs page
 - Tag statistics and filtering
+
+![Dashboard](screenshots/vantage_01.png)
+
+**Jobs List** - View and filter all jobs:
+
+![Jobs List](screenshots/vantage_02.png)
+
+**Job Details** - See full job information with retry chains:
+
+![Job Details](screenshots/vantage_03.png)
 
 **Note:** The dashboard requires authentication by default. Make sure you're logged in or customize the `viewVantage` gate as described in the Configuration section.
 
@@ -52,6 +64,8 @@ php artisan vantage:retry {job_id}
 
 Or use the web interface - just click retry on any failed job.
 
+![Retry Jobs](screenshots/vantage_09.png)
+
 ### Job Tagging
 
 Jobs with tags (using Laravel's `tags()` method) are automatically tracked. Visit `/vantage/tags` to see:
@@ -62,11 +76,17 @@ Jobs with tags (using Laravel's `tags()` method) are automatically tracked. Visi
 - **Clickable Tags**: Click a tag to view all jobs with that tag
 - **Time Filters**: View data for last 24 hours, 7 days, or 30 days
 
+![Tags Analytics](screenshots/vanatge_05.png)
+
+![Tags Analytics - Detailed View](screenshots/vanatge_06.png)
+
 Filter and view jobs by tag in the web interface.
 
 ### Queue Depth Monitoring
 
 Real-time queue depth tracking for all your queues. See how many jobs are pending in each queue with health status indicators.
+
+![Queue Depth](screenshots/vantage_07.png)
 
 Visit `/vantage` to see queue depths displayed with:
 - Current pending job count per queue
@@ -79,6 +99,8 @@ Vantage automatically tracks performance metrics for your jobs:
 - Memory usage (start, end, peak)
 - CPU time (user and system)
 - Execution duration
+
+![Performance Telemetry](screenshots/vantage_08.png)
 
 Telemetry can be configured via environment variables (see Environment Variables section below).
 
