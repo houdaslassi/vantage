@@ -76,9 +76,7 @@ Jobs with tags (using Laravel's `tags()` method) are automatically tracked. Visi
 - **Clickable Tags**: Click a tag to view all jobs with that tag
 - **Time Filters**: View data for last 24 hours, 7 days, or 30 days
 
-![Tags Analytics](screenshots/vanatge_05.png)
-
-![Tags Analytics - Detailed View](screenshots/vanatge_06.png)
+![Tags Analytics](screenshots/vantage_07.png)
 
 Filter and view jobs by tag in the web interface.
 
