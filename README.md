@@ -53,7 +53,7 @@ Visit `/vantage` to see:
 
 ![Jobs List](screenshots/vantage_02.png)
 
-**Job Details** - See full job information with exception details.
+**Job Details** - See full job information with exception details and retry history.
 
 **Note:** The dashboard requires authentication by default. Make sure you're logged in or customize the `viewVantage` gate as described in the Configuration section.
 
