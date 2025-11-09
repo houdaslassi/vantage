@@ -37,7 +37,7 @@ Visit `/vantage/failed` to see all failed jobs with exception details and retry 
 
 ![Failed Jobs](screenshots/vantage_04.png)
 
-![Failed Jobs List](screenshots/vanatge_05.png)
+![Failed Jobs List](screenshots/vanatge_06.png)
 
 ### Web Interface
 
