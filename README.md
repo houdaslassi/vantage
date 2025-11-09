@@ -291,6 +291,14 @@ VANTAGE_SLACK_WEBHOOK=https://hooks.slack.com/services/...
 VANTAGE_ROUTES=true
 ```
 
+## Demo
+
+Watch a brief demo of the Vantage dashboard in action:
+
+https://github.com/houdaslassi/vantage/blob/main/screenshots/record-demo.mov
+
+<video src="screenshots/record-demo.mov" controls width="100%"></video>
+
 ## License
 
 MIT
