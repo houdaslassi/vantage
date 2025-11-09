@@ -84,6 +84,8 @@ Filter and view jobs by tag in the web interface.
 
 Real-time queue depth tracking for all your queues. See how many jobs are pending in each queue with health status indicators.
 
+![Queue Depth](screenshots/vantage_10.png)
+
 Visit `/vantage` to see queue depths displayed with:
 - Current pending job count per queue
 - Health status (healthy/normal/warning/critical)
