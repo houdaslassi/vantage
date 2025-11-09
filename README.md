@@ -1,6 +1,8 @@
 # Vantage
 
-A Laravel package that tracks and monitors your queue jobs across **all queue drivers** (database, Redis, SQS, and more). Automatically records job execution history, failures, retries, and saves everything. Provides a comprehensive web interface to view and analyze all your queue activity.
+A Laravel package that tracks and monitors your queue jobs.
+Automatically records job execution history, failures, retries,
+and provides a simple web interface to view everything.
 
 ## Installation
 
