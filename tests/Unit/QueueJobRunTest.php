@@ -1,6 +1,6 @@
 <?php
 
-use houdaslassi\Vantage\Models\QueueJobRun;
+use HoudaSlassi\Vantage\Models\QueueJobRun;
 use Illuminate\Support\Str;
 
 function makeJob(array $overrides = []): QueueJobRun

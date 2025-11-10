@@ -5,12 +5,12 @@
   "license": "MIT",
   "autoload": {
     "psr-4": {
-      "houdaslassi\\Vantage\\": "src/"
+      "HoudaSlassi\\Vantage\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "houdaslassi\\Vantage\\Tests\\": "tests/"
+      "HoudaSlassi\\Vantage\\Tests\\": "tests/"
     }
   },
   "require": {
@@ -27,7 +27,7 @@
   "extra": {
     "laravel": {
       "providers": [
-            "houdaslassi\\Vantage\\VantageServiceProvider"
+            "HoudaSlassi\\Vantage\\VantageServiceProvider"
       ]
     }
   },

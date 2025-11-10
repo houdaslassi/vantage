@@ -19,7 +19,7 @@ return new class extends Migration {
     public function up(): void
     {
         $connection = $this->getConnection();
-        $schema = $connection ? Schema::connection($connection) : Schema;
+        $schema = Schema::connection($connection);
 
         $schema->table('queue_job_runs', function (Blueprint $table) {
             // Memory metrics (bytes)
@@ -38,7 +38,7 @@ return new class extends Migration {
     public function down(): void
     {
         $connection = $this->getConnection();
-        $schema = $connection ? Schema::connection($connection) : Schema;
+        $schema = Schema::connection($connection);
 
         $schema->table('queue_job_runs', function (Blueprint $table) {
             $table->dropColumn([

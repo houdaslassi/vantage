@@ -1,9 +1,9 @@
 <?php
 
-namespace houdaslassi\Vantage\Http\Controllers;
+namespace HoudaSlassi\Vantage\Http\Controllers;
 
-use houdaslassi\Vantage\Models\QueueJobRun;
-use houdaslassi\Vantage\Support\QueueDepthChecker;
+use HoudaSlassi\Vantage\Models\QueueJobRun;
+use HoudaSlassi\Vantage\Support\QueueDepthChecker;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;

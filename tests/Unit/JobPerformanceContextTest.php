@@ -1,6 +1,6 @@
 <?php
 
-use houdaslassi\Vantage\Support\JobPerformanceContext;
+use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 
 beforeEach(function () {
     // Clear baselines before each test

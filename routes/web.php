@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use houdaslassi\Vantage\Http\Controllers\QueueMonitorController;
-use houdaslassi\Vantage\Http\Middleware\AuthorizeVantage;
+use HoudaSlassi\Vantage\Http\Controllers\QueueMonitorController;
+use HoudaSlassi\Vantage\Http\Middleware\AuthorizeVantage;
 
 Route::prefix('vantage')->name('vantage.')->middleware(['web', AuthorizeVantage::class])->group(function () {
     Route::get('/', [QueueMonitorController::class, 'index'])->name('dashboard');

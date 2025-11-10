@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\Vantage\Support\Traits;
+namespace HoudaSlassi\Vantage\Support\Traits;
 
 trait ExtractsRetryOf
 {

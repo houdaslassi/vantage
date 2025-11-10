@@ -1,8 +1,8 @@
 <?php
 
-namespace houdaslassi\Vantage\Tests;
+namespace HoudaSlassi\Vantage\Tests;
 
-use houdaslassi\Vantage\VantageServiceProvider;
+use HoudaSlassi\Vantage\VantageServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -37,6 +37,10 @@ abstract class TestCase extends Orchestra
 
         // Enable routes for testing
         $app['config']->set('vantage.routes', true);
+        $app['config']->set('vantage.auth.enabled', false);
+
+        // Set application key for encryption
+        $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
     }
 }
 

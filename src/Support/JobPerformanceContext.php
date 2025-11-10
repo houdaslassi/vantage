@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\Vantage\Support;
+namespace HoudaSlassi\Vantage\Support;
 
 /**
  * Simple static context to keep per-job runtime baselines in memory

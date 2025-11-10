@@ -1,13 +1,13 @@
 <?php
 
-namespace houdaslassi\Vantage\Listeners;
+namespace HoudaSlassi\Vantage\Listeners;
 
-use houdaslassi\Vantage\Support\Traits\ExtractsRetryOf;
-use houdaslassi\Vantage\Support\TagExtractor;
-use houdaslassi\Vantage\Support\PayloadExtractor;
-use houdaslassi\Vantage\Support\JobPerformanceContext;
+use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
+use HoudaSlassi\Vantage\Support\TagExtractor;
+use HoudaSlassi\Vantage\Support\PayloadExtractor;
+use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 use Illuminate\Queue\Events\JobProcessing;
-use houdaslassi\Vantage\Models\QueueJobRun;
+use HoudaSlassi\Vantage\Models\QueueJobRun;
 
 class RecordJobStart
 {

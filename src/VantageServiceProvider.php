@@ -1,8 +1,8 @@
 <?php
 
-namespace houdaslassi\Vantage;
+namespace HoudaSlassi\Vantage;
 
-use houdaslassi\Vantage\Console\Commands\RetryFailedJob;
+use HoudaSlassi\Vantage\Console\Commands\RetryFailedJob;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;

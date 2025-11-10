@@ -1,9 +1,9 @@
 <?php
 
-use houdaslassi\Vantage\Listeners\RecordJobFailure;
-use houdaslassi\Vantage\Listeners\RecordJobStart;
-use houdaslassi\Vantage\Listeners\RecordJobSuccess;
-use houdaslassi\Vantage\Models\QueueJobRun;
+use HoudaSlassi\Vantage\Listeners\RecordJobFailure;
+use HoudaSlassi\Vantage\Listeners\RecordJobStart;
+use HoudaSlassi\Vantage\Listeners\RecordJobSuccess;
+use HoudaSlassi\Vantage\Models\QueueJobRun;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;

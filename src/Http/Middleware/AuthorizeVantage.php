@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\Vantage\Http\Middleware;
+namespace HoudaSlassi\Vantage\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

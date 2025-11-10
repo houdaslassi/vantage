@@ -1,7 +1,7 @@
 <?php
 
-use houdaslassi\Vantage\Models\QueueJobRun;
-use houdaslassi\Vantage\Support\QueueDepthChecker;
+use HoudaSlassi\Vantage\Models\QueueJobRun;
+use HoudaSlassi\Vantage\Support\QueueDepthChecker;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
