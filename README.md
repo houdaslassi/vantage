@@ -308,7 +308,7 @@ VANTAGE_ROUTE_PREFIX=vantage
 
 Watch a brief demo of the Vantage dashboard in action:
 
-[![Vantage Demo](https://img.youtube.com/vi/IZAjYTtzL7I/0.jpg)](https://www.youtube.com/watch?v=IZAjYTtzL7I)
+[![Vantage Demo](https://img.youtube.com/vi/IZAjYTtzL7I/0.jpg)](https://www.youtube.com/watch?v=ZPea5E3o_2w)
 
 > Click the thumbnail above to watch the demo video on YouTube.
 
