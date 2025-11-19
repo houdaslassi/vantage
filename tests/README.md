@@ -108,9 +108,9 @@ php artisan queue:work --tries=3 --timeout=300
 
 # Terminal 3: Monitor database
 php artisan tinker
->>> \houdaslassi\Vantage\Models\VantageJob::count()
->>> \houdaslassi\Vantage\Models\VantageJob::where('status', 'processed')->count()
->>> \houdaslassi\Vantage\Models\VantageJob::where('status', 'failed')->count()
+>>> \HoudaSlassi\Vantage\Models\VantageJob::count()
+>>> \HoudaSlassi\Vantage\Models\VantageJob::where('status', 'processed')->count()
+>>> \HoudaSlassi\Vantage\Models\VantageJob::where('status', 'failed')->count()
 ```
 
 ## Writing New Tests

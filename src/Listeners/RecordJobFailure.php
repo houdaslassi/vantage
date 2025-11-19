@@ -1,17 +1,17 @@
 <?php
 
-namespace houdaslassi\Vantage\Listeners;
+namespace HoudaSlassi\Vantage\Listeners;
 
-use houdaslassi\Vantage\Notifications\JobFailedNotification;
-use houdaslassi\Vantage\Support\Traits\ExtractsRetryOf;
-use houdaslassi\Vantage\Support\TagExtractor;
-use houdaslassi\Vantage\Support\PayloadExtractor;
-use houdaslassi\Vantage\Support\JobPerformanceContext;
+use HoudaSlassi\Vantage\Notifications\JobFailedNotification;
+use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
+use HoudaSlassi\Vantage\Support\TagExtractor;
+use HoudaSlassi\Vantage\Support\PayloadExtractor;
+use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Str;
-use houdaslassi\Vantage\Models\VantageJob;
+use HoudaSlassi\Vantage\Models\VantageJob;
 
 class RecordJobFailure
 {

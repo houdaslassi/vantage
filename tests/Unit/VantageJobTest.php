@@ -1,6 +1,6 @@
 <?php
 
-use houdaslassi\Vantage\Models\VantageJob;
+use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Support\Str;
 
 function makeJob(array $overrides = []): VantageJob

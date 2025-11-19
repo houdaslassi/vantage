@@ -1,9 +1,9 @@
 <?php
 
-namespace houdaslassi\Vantage\Console\Commands;
+namespace HoudaSlassi\Vantage\Console\Commands;
 
 use Illuminate\Console\Command;
-use houdaslassi\Vantage\Models\VantageJob;
+use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Support\Str;
 
 class RetryFailedJob extends Command

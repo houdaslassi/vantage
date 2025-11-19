@@ -1,8 +1,8 @@
 <?php
 
-namespace houdaslassi\Vantage\Tests;
+namespace HoudaSlassi\Vantage\Tests;
 
-use houdaslassi\Vantage\VantageServiceProvider;
+use HoudaSlassi\Vantage\VantageServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Orchestra\Testbench\TestCase as Orchestra;
 

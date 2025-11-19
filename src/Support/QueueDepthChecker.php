@@ -1,6 +1,6 @@
 <?php
 
-namespace houdaslassi\Vantage\Support;
+namespace HoudaSlassi\Vantage\Support;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -150,7 +150,7 @@ class QueueDepthChecker
         // For unsupported drivers, we can still show what we know from job_runs
         // Count jobs that are processing or recently started (might be queued)
         try {
-            $query = \houdaslassi\Vantage\Models\VantageJob::where('status', 'processing');
+            $query = \HoudaSlassi\Vantage\Models\VantageJob::where('status', 'processing');
             
             if ($queueName) {
                 $query->where('queue', $queueName);

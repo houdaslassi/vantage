@@ -1,13 +1,13 @@
 <?php
 
-namespace houdaslassi\Vantage\Notifications;
+namespace HoudaSlassi\Vantage\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
-use houdaslassi\Vantage\Models\VantageJob;
+use HoudaSlassi\Vantage\Models\VantageJob;
 
 class JobFailedNotification extends Notification implements ShouldQueue
 {
