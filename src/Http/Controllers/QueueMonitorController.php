@@ -328,7 +328,16 @@ class QueueMonitorController extends Controller
             ->withQueryString();
 
         // Get filter options
-        $queues = VantageJob::distinct()->pluck('queue')->filter();
+        // Only show queues that actually have jobs in vantage_jobs table
+        // This ensures filtering by a queue will return results
+        $queues = VantageJob::distinct()
+            ->whereNotNull('queue')
+            ->where('queue', '!=', '')
+            ->pluck('queue')
+            ->filter()
+            ->sort()
+            ->values();
+        
         $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn($c) => class_basename($c))->filter();
 
         // Get all available tags with counts
