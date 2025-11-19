@@ -2,6 +2,8 @@
 
 namespace HoudaSlassi\Vantage\Support\Traits;
 
+use HoudaSlassi\Vantage\Support\VantageLogger;
+
 trait ExtractsRetryOf
 {
     /**
@@ -25,10 +27,10 @@ trait ExtractsRetryOf
             }
         } catch (\Throwable $e) {
             // Log error if needed, but don't break the application
-            \Log::debug('Error extracting retryOf', ['error' => $e->getMessage()]);
+            VantageLogger::debug('Error extracting retryOf', ['error' => $e->getMessage()]);
         }
 
-        \Log::debug('QM retryOf check', ['retryOf' => $retryOf]);
+        VantageLogger::debug('QM retryOf check', ['retryOf' => $retryOf]);
 
         return $retryOf;
     }

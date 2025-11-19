@@ -154,4 +154,17 @@ return [
     'auth' => [
         'enabled' => env('VANTAGE_AUTH_ENABLED', true),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logging
+    |--------------------------------------------------------------------------
+    |
+    | Toggle package-originated log messages. When disabled, Vantage will refrain
+    | from writing informational/debug/warning logs to your application log.
+    |
+    */
+    'logging' => [
+        'enabled' => env('VANTAGE_LOGGING_ENABLED', true),
+    ],
 ];

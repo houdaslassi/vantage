@@ -2,7 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Support;
 
-use Illuminate\Support\Facades\Log;
+use HoudaSlassi\Vantage\Support\VantageLogger;
 
 /**
  * Simple Payload Extractor
@@ -52,7 +52,7 @@ class PayloadExtractor
 
             // Debug: Log what we're extracting
             if (config('app.debug', false)) {
-                \Log::info('PayloadExtractor: Complete payload extracted', [
+                VantageLogger::info('PayloadExtractor: Complete payload extracted', [
                     'command_class' => $command ? get_class($command) : null,
                     'raw_payload_keys' => array_keys($rawPayload),
                     'command_data_keys' => array_keys($commandData),
@@ -62,7 +62,7 @@ class PayloadExtractor
 
             return json_encode($fullData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         } catch (\Throwable $e) {
-            \Log::error('PayloadExtractor: Failed to extract payload', [
+            VantageLogger::error('PayloadExtractor: Failed to extract payload', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

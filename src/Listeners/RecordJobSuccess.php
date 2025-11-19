@@ -9,7 +9,7 @@ use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 use Illuminate\Queue\Events\JobProcessed;
 use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Support\Facades\Log;
+use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Support\Str;
 
 class RecordJobSuccess
@@ -104,14 +104,14 @@ class RecordJobSuccess
             // Clear baseline
             JobPerformanceContext::clearBaseline($uuid);
 
-            Log::debug('Queue Monitor: Job completed', [
+            VantageLogger::debug('Queue Monitor: Job completed', [
                 'id' => $row->id,
                 'job_class' => $jobClass,
                 'duration_ms' => $row->duration_ms,
             ]);
         } else {
             // Fallback: Create a new processed record if we didn't catch the start
-            Log::warning('Queue Monitor: No processing record found, creating new', [
+            VantageLogger::warning('Queue Monitor: No processing record found, creating new', [
                 'job_class' => $jobClass,
                 'uuid' => $uuid,
             ]);

@@ -4,6 +4,7 @@ namespace HoudaSlassi\Vantage\Http\Controllers;
 
 use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\QueueDepthChecker;
+use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
@@ -145,7 +146,7 @@ class QueueMonitorController extends Controller
         try {
             $queueDepths = QueueDepthChecker::getQueueDepthWithMetadataAlways();
         } catch (\Throwable $e) {
-            Log::warning('Failed to get queue depths', ['error' => $e->getMessage()]);
+            VantageLogger::warning('Failed to get queue depths', ['error' => $e->getMessage()]);
             // Always show at least one queue entry even on error
             $queueDepths = [
                 'default' => [
@@ -434,7 +435,7 @@ class QueueMonitorController extends Controller
             return back()->with('success', "✓ Job queued for retry!");
 
         } catch (\Throwable $e) {
-            \Log::error('Vantage: Retry failed', [
+                VantageLogger::error('Vantage: Retry failed', [
                 'job_id' => $id,
                 'error' => $e->getMessage()
             ]);
@@ -460,7 +461,7 @@ class QueueMonitorController extends Controller
             $serialized = $payload['raw_payload']['data']['command'] ?? null;
 
             if (!$serialized) {
-                \Log::warning('Vantage: No serialized command in payload', ['run_id' => $run->id]);
+                VantageLogger::warning('Vantage: No serialized command in payload', ['run_id' => $run->id]);
                 return null;
             }
 
@@ -468,14 +469,14 @@ class QueueMonitorController extends Controller
             $job = unserialize($serialized, ['allowed_classes' => true]);
 
             if (!is_object($job)) {
-                \Log::warning('Vantage: Unserialize did not return object', [
+                VantageLogger::warning('Vantage: Unserialize did not return object', [
                     'run_id' => $run->id,
                     'result_type' => gettype($job)
                 ]);
                 return null;
             }
 
-            \Log::info('Vantage: Successfully restored job', [
+            VantageLogger::info('Vantage: Successfully restored job', [
                 'run_id' => $run->id,
                 'job_class' => get_class($job)
             ]);

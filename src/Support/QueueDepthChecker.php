@@ -5,7 +5,7 @@ namespace HoudaSlassi\Vantage\Support;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Support\Facades\Log;
+use HoudaSlassi\Vantage\Support\VantageLogger;
 
 class QueueDepthChecker
 {
@@ -74,7 +74,7 @@ class QueueDepthChecker
                 return $depths;
             }
         } catch (\Throwable $e) {
-            Log::warning('Failed to get database queue depth', [
+            VantageLogger::warning('Failed to get database queue depth', [
                 'error' => $e->getMessage(),
                 'queue' => $queueName,
             ]);
@@ -129,7 +129,7 @@ class QueueDepthChecker
 
             return $queues;
         } catch (\Throwable $e) {
-            Log::warning('Failed to get Redis queue depth', [
+            VantageLogger::warning('Failed to get Redis queue depth', [
                 'error' => $e->getMessage(),
                 'queue' => $queueName,
             ]);
@@ -142,7 +142,7 @@ class QueueDepthChecker
      */
     protected static function getFallbackQueueDepth(?string $queueName, string $driver): array
     {
-        Log::debug('Queue depth not supported for driver', [
+        VantageLogger::debug('Queue depth not supported for driver', [
             'driver' => $driver,
             'queue' => $queueName,
         ]);

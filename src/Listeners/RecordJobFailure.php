@@ -7,7 +7,7 @@ use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use HoudaSlassi\Vantage\Support\TagExtractor;
 use HoudaSlassi\Vantage\Support\PayloadExtractor;
 use HoudaSlassi\Vantage\Support\JobPerformanceContext;
-use Illuminate\Support\Facades\Log;
+use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Str;
@@ -106,7 +106,7 @@ class RecordJobFailure
             JobPerformanceContext::clearBaseline($uuid);
         } else {
             // Fallback: Create new record if we didn't catch the start
-            Log::warning('Queue Monitor: No processing record found for failed job, creating new', [
+            VantageLogger::warning('Queue Monitor: No processing record found for failed job, creating new', [
                 'job_class' => $jobClass,
                 'uuid' => $uuid,
             ]);
@@ -133,7 +133,7 @@ class RecordJobFailure
             ]);
         }
 
-        Log::info('Queue Monitor: Job failed', [
+        VantageLogger::info('Queue Monitor: Job failed', [
            'id' => $row->id,
            'job_class' => $row->job_class,
            'exception' => $row->exception_class,
