@@ -12,6 +12,8 @@
 */
 
 use HoudaSlassi\Vantage\Tests\TestCase;
+use HoudaSlassi\Vantage\Tests\CustomRoutePrefixTestCase;
 
 uses(TestCase::class)->in('Feature', 'Unit');
+uses(CustomRoutePrefixTestCase::class)->in('RoutePrefixTest.php');
 

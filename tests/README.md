@@ -45,6 +45,7 @@ composer test
   - Retry chain display
   - Tag filtering
   - Failed jobs page
+- **RoutePrefixTest.php**: Verifies custom route prefix configuration serves the dashboard correctly
 
 ## Load Testing
 

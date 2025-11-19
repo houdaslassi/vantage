@@ -4,7 +4,10 @@ use Illuminate\Support\Facades\Route;
 use HoudaSlassi\Vantage\Http\Controllers\QueueMonitorController;
 use HoudaSlassi\Vantage\Http\Middleware\AuthorizeVantage;
 
-Route::prefix('vantage')->name('vantage.')->middleware(['web', AuthorizeVantage::class])->group(function () {
+$prefix = trim(config('vantage.route_prefix', 'vantage'), '/');
+$prefix = $prefix === '' ? 'vantage' : $prefix;
+
+Route::prefix($prefix)->name('vantage.')->middleware(['web', AuthorizeVantage::class])->group(function () {
     Route::get('/', [QueueMonitorController::class, 'index'])->name('dashboard');
     Route::get('/jobs', [QueueMonitorController::class, 'jobs'])->name('jobs');
     Route::get('/jobs/{id}', [QueueMonitorController::class, 'show'])->name('jobs.show');

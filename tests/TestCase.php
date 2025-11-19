@@ -10,6 +10,8 @@ abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
 
+    protected string $routePrefix = 'vantage';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -37,6 +39,7 @@ abstract class TestCase extends Orchestra
 
         // Enable routes for testing
         $app['config']->set('vantage.routes', true);
+        $app['config']->set('vantage.route_prefix', $this->routePrefix);
 
         // Provide application key for encryption-dependent features
         $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));

@@ -99,11 +99,13 @@ return [
     | Web Routes
     |--------------------------------------------------------------------------
     |
-    | Whether to register web routes for viewing job history.
-    | When enabled, routes will be available at /queue-monitor
+    | Configure how the dashboard routes are registered.
+    | - routes: master switch to register routes at all
+    | - route_prefix: base URI segment for all dashboard routes
     |
     */
     'routes' => env('VANTAGE_ROUTES', true),
+    'route_prefix' => env('VANTAGE_ROUTE_PREFIX', 'vantage'),
 
     /*
     |--------------------------------------------------------------------------
