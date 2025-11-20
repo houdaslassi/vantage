@@ -17,24 +17,17 @@ class AuthorizeVantage
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // If auth is disabled, allow access
-        if (!config('vantage.auth.enabled', true)) {
-            return $next($request);
-        }
-
-        // Check if user is authenticated (try default guard first, then web guard)
+        // Try to resolve the authenticated user, but allow null
         $user = Auth::user() ?? Auth::guard('web')->user();
-        
-        if (!$user) {
-            abort(401, 'Unauthenticated. Please log in to access Vantage dashboard.');
-        }
 
-        // Check authorization via gate (like Horizon)
-        if (!Gate::forUser($user)->allows('viewVantage')) {
+        // Authorization is fully handled by the Gate
+        // The Gate accepts a null user and performs its own logic
+        if (!Gate::allows('viewVantage', $user)) {
             abort(403, 'Unauthorized access to Vantage dashboard.');
         }
 
         return $next($request);
     }
 }
+
 
