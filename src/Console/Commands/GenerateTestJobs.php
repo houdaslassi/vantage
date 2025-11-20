@@ -44,7 +44,7 @@ class GenerateTestJobs extends Command
             return self::FAILURE;
         }
 
-        $this->info("🚀 Generating {$count} test jobs...");
+        $this->info("[INFO] Generating {$count} test jobs...");
         $this->info("   Success rate: {$successRate}%");
         $this->info("   Queue: {$queue}");
         $this->info("   Tags: " . implode(', ', $tags));
@@ -88,12 +88,12 @@ class GenerateTestJobs extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info("✅ Dispatched {$dispatched} jobs to queue '{$queue}'");
+        $this->info("[OK] Dispatched {$dispatched} jobs to queue '{$queue}'");
         $this->info("   Expected failures: ~" . round($dispatched * (100 - $successRate) / 100));
         $this->info("   Expected successes: ~" . round($dispatched * $successRate / 100));
         $this->newLine();
-        $this->info("💡 Monitor progress at: /vantage");
-        $this->info("💡 Run queue worker: php artisan queue:work");
+        $this->info("[TIP] Monitor progress at: /vantage");
+        $this->info("[TIP] Run queue worker: php artisan queue:work");
 
         return self::SUCCESS;
     }

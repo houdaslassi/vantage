@@ -10,8 +10,9 @@
         <p class="text-sm text-gray-500 mt-1">Strategic queue monitoring and observability</p>
     </div>
     <div class="flex gap-3 items-center">
-        <button onclick="location.reload()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-            🔄 Refresh
+        <button onclick="location.reload()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 inline-flex items-center gap-2">
+            <i data-lucide="refresh-cw" class="w-4 h-4" aria-hidden="true"></i>
+            Refresh
         </button>
         <form method="GET" class="inline-block">
             <select name="period" onchange="this.form.submit()" class="px-4 py-2 text-sm font-medium border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
@@ -36,7 +37,9 @@
                     <p class="text-sm font-medium text-blue-600 uppercase tracking-wide">Total Jobs</p>
                     <p class="text-3xl font-bold text-blue-900 mt-2">{{ number_format($stats['total']) }}</p>
                 </div>
-                <div class="text-4xl opacity-80">📦</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="package" class="w-10 h-10 text-blue-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -52,7 +55,9 @@
                         <p class="text-xs text-green-600 mt-1">{{ round(($stats['processed'] / $stats['total']) * 100, 1) }}% of total</p>
                     @endif
                 </div>
-                <div class="text-4xl opacity-80">✅</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="check-circle" class="w-10 h-10 text-green-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -68,7 +73,9 @@
                         <p class="text-xs text-red-600 mt-1">{{ round(($stats['failed'] / $stats['total']) * 100, 1) }}% of total</p>
                     @endif
                 </div>
-                <div class="text-4xl opacity-80">❌</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="x-circle" class="w-10 h-10 text-red-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -82,12 +89,18 @@
                     <p class="text-3xl font-bold text-yellow-900 mt-2">{{ number_format($stats['processing']) }}</p>
                     <p class="text-xs text-yellow-600 mt-1">Currently running</p>
                 </div>
-                <div class="text-4xl opacity-80 animate-pulse">⏳</div>
+                <div class="text-4xl opacity-80 animate-pulse">
+                    <i data-lucide="clock" class="w-10 h-10 text-yellow-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Success Rate -->
+    @php
+        $successIcon = $stats['success_rate'] >= 95 ? 'target' : ($stats['success_rate'] >= 80 ? 'bar-chart-2' : 'alert-triangle');
+        $successIconColor = $stats['success_rate'] >= 95 ? 'text-emerald-500' : ($stats['success_rate'] >= 80 ? 'text-amber-500' : 'text-rose-500');
+    @endphp
     <div class="bg-gradient-to-br {{ $stats['success_rate'] >= 95 ? 'from-emerald-50 to-emerald-100 border-emerald-200' : ($stats['success_rate'] >= 80 ? 'from-amber-50 to-amber-100 border-amber-200' : 'from-rose-50 to-rose-100 border-rose-200') }} overflow-hidden shadow-lg rounded-xl border hover:shadow-xl transition-shadow">
         <div class="p-5">
             <div class="flex items-center justify-between">
@@ -104,7 +117,9 @@
                         @endif
                     </p>
                 </div>
-                <div class="text-4xl opacity-80">{{ $stats['success_rate'] >= 95 ? '🎯' : ($stats['success_rate'] >= 80 ? '📊' : '⚠️') }}</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="{{ $successIcon }}" class="w-10 h-10 {{ $successIconColor }}" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -137,7 +152,9 @@
                     </p>
                     <p class="text-xs text-purple-600 mt-1">Peak usage</p>
                 </div>
-                <div class="text-4xl opacity-80">💾</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="hard-drive" class="w-10 h-10 text-purple-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -164,7 +181,9 @@
                     </p>
                     <p class="text-xs text-indigo-600 mt-1">Maximum observed</p>
                 </div>
-                <div class="text-4xl opacity-80">📈</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="trending-up" class="w-10 h-10 text-indigo-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -189,7 +208,9 @@
                     </p>
                     <p class="text-xs text-cyan-600 mt-1">User + System</p>
                 </div>
-                <div class="text-4xl opacity-80">⚡</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="zap" class="w-10 h-10 text-cyan-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -218,7 +239,9 @@
                     </p>
                     <p class="text-xs text-teal-600 mt-1">Avg change per job</p>
                 </div>
-                <div class="text-4xl opacity-80">📊</div>
+                <div class="text-4xl opacity-80">
+                    <i data-lucide="bar-chart-2" class="w-10 h-10 text-teal-500" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -228,7 +251,10 @@
 
 <!-- Queue Depths -->
 <div class="bg-white shadow rounded-lg mb-8 p-6">
-    <h3 class="text-lg font-medium text-gray-900 mb-4">📊 Queue Depths (Real-time)</h3>
+    <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+        <i data-lucide="bar-chart-2" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+        Queue Depths (Real-time)
+    </h3>
     @if(!empty($queueDepths))
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($queueDepths as $queueName => $queueInfo)
@@ -240,20 +266,20 @@
                         <p class="text-xs text-gray-500 mt-1">
                             {{ ucfirst($queueInfo['status']) }}
                             @if(isset($queueInfo['driver']) && $queueInfo['driver'])
-                                · {{ $queueInfo['driver'] }}
+                                &middot; {{ $queueInfo['driver'] }}
                             @endif
                         </p>
                     </div>
+                    @php
+                        $statusColor = match($queueInfo['status']) {
+                            'critical' => 'text-red-500',
+                            'warning' => 'text-yellow-500',
+                            'normal' => 'text-blue-500',
+                            default => 'text-green-500',
+                        };
+                    @endphp
                     <div class="text-3xl">
-                        @if($queueInfo['status'] === 'critical')
-                            🔴
-                        @elseif($queueInfo['status'] === 'warning')
-                            🟡
-                        @elseif($queueInfo['status'] === 'normal')
-                            🟢
-                        @else
-                            ✅
-                        @endif
+                        <i data-lucide="circle" class="w-6 h-6 {{ $statusColor }}" aria-hidden="true"></i>
                     </div>
                 </div>
             </div>
@@ -276,7 +302,10 @@
 <!-- Success Rate Trend Chart -->
 <div class="bg-white shadow rounded-lg mb-8">
     <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">📈 Success Rate Trend</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+            Success Rate Trend
+        </h3>
         <div class="h-64" id="trendChart">
             <canvas id="successRateChart"></canvas>
         </div>
@@ -290,7 +319,10 @@
     @if($topMemoryJobs->isNotEmpty())
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">💾 Top Memory Consumers</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+                <i data-lucide="hard-drive" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+                Top Memory Consumers
+            </h3>
             <div class="space-y-3">
                 @foreach($topMemoryJobs as $job)
                     <div class="flex items-center justify-between border rounded-lg p-3 hover:bg-gray-50">
@@ -326,7 +358,10 @@
     @if($topCpuJobs->isNotEmpty())
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">⚡ Top CPU Consumers</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+                <i data-lucide="zap" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+                Top CPU Consumers
+            </h3>
             <div class="space-y-3">
                 @foreach($topCpuJobs as $job)
                     <div class="flex items-center justify-between border rounded-lg p-3 hover:bg-gray-50">
@@ -362,7 +397,10 @@
     <!-- Top Tags -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">🏷️ Top Tags</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+                <i data-lucide="tag" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+                Top Tags
+            </h3>
             @if($topTags->isEmpty())
                 <p class="text-gray-500 text-center py-4">No tags found</p>
             @else
@@ -377,15 +415,24 @@
                                     {{ number_format($tagData['total']) }}
                                 </span>
                             </div>
-                            <div class="flex gap-2 text-xs">
+                            <div class="flex gap-3 text-xs">
                                 @if($tagData['processed'] > 0)
-                                    <span class="text-green-600">✅ {{ $tagData['processed'] }}</span>
+                                    <span class="text-green-600 inline-flex items-center gap-1">
+                                        <i data-lucide="check-circle" class="w-4 h-4" aria-hidden="true"></i>
+                                        {{ $tagData['processed'] }}
+                                    </span>
                                 @endif
                                 @if($tagData['failed'] > 0)
-                                    <span class="text-red-600">❌ {{ $tagData['failed'] }}</span>
+                                    <span class="text-red-600 inline-flex items-center gap-1">
+                                        <i data-lucide="x-circle" class="w-4 h-4" aria-hidden="true"></i>
+                                        {{ $tagData['failed'] }}
+                                    </span>
                                 @endif
                                 @if($tagData['processing'] > 0)
-                                    <span class="text-yellow-600">⏳ {{ $tagData['processing'] }}</span>
+                                    <span class="text-yellow-600 inline-flex items-center gap-1">
+                                        <i data-lucide="clock" class="w-4 h-4" aria-hidden="true"></i>
+                                        {{ $tagData['processing'] }}
+                                    </span>
                                 @endif
                             </div>
                         </div>
@@ -398,9 +445,15 @@
     <!-- Top Failing Jobs -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">❌ Top Failing Jobs</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+                <i data-lucide="x-octagon" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+                Top Failing Jobs
+            </h3>
             @if($topFailingJobs->isEmpty())
-                <p class="text-gray-500 text-center py-4">No failures! 🎉</p>
+                <p class="text-gray-500 text-center py-4 flex items-center justify-center gap-2">
+                    <i data-lucide="star" class="w-4 h-4 text-amber-500" aria-hidden="true"></i>
+                    No failures!
+                </p>
             @else
                 <div class="space-y-3">
                     @foreach($topFailingJobs as $job)
@@ -421,9 +474,15 @@
     <!-- Top Exceptions -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">⚠️ Top Exceptions</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+                Top Exceptions
+            </h3>
             @if($topExceptions->isEmpty())
-                <p class="text-gray-500 text-center py-4">No exceptions! 🎉</p>
+                <p class="text-gray-500 text-center py-4 flex items-center justify-center gap-2">
+                    <i data-lucide="star" class="w-4 h-4 text-amber-500" aria-hidden="true"></i>
+                    No exceptions!
+                </p>
             @else
                 <div class="space-y-3">
                     @foreach($topExceptions as $exception)
@@ -444,7 +503,10 @@
     <!-- Slowest Jobs -->
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">🐌 Slowest Jobs</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+                <i data-lucide="timer" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+                Slowest Jobs
+            </h3>
             @if($slowestJobs->isEmpty())
                 <p class="text-gray-500 text-center py-4">No data yet</p>
             @else
@@ -473,7 +535,10 @@
 @if($recentBatches->isNotEmpty())
 <div class="bg-white shadow rounded-lg mb-8">
     <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg font-medium text-gray-900 mb-4">📦 Recent Batches</h3>
+        <h3 class="text-lg font-medium text-gray-900 mb-4 inline-flex items-center gap-2">
+            <i data-lucide="package" class="w-5 h-5 text-gray-500" aria-hidden="true"></i>
+            Recent Batches
+        </h3>
         <div class="space-y-3">
             @foreach($recentBatches as $batch)
                 <div class="border rounded-lg p-4">
@@ -497,7 +562,7 @@
                                 ? round((($batch->total_jobs - $batch->pending_jobs) / $batch->total_jobs) * 100) 
                                 : 0;
                         @endphp
-                        <span class="text-gray-400">•</span>
+                        <span class="text-gray-400">&bull;</span>
                         <span>{{ $progress }}% complete</span>
                     </div>
                     <div class="mt-2 bg-gray-200 rounded-full h-2">
@@ -515,8 +580,9 @@
     <div class="px-4 py-5 sm:p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium text-gray-900">Recent Jobs</h3>
-            <a href="{{ route('vantage.jobs') }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-                View all →
+            <a href="{{ route('vantage.jobs') }}" class="text-sm text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                View all
+                <i data-lucide="chevron-right" class="w-4 h-4" aria-hidden="true"></i>
             </a>
         </div>
         <div class="overflow-x-auto">

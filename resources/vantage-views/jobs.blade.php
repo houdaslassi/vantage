@@ -36,9 +36,9 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                     <select name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                         <option value="">All Statuses</option>
-                        <option value="processed" {{ request('status') === 'processed' ? 'selected' : '' }}>✅ Processed</option>
-                        <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>❌ Failed</option>
-                        <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>⏳ Processing</option>
+                        <option value="processed" {{ request('status') === 'processed' ? 'selected' : '' }}>Processed</option>
+                        <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Failed</option>
+                        <option value="processing" {{ request('status') === 'processing' ? 'selected' : '' }}>Processing</option>
                     </select>
                 </div>
 
@@ -166,6 +166,8 @@ window.addTagToFilter = function(tag) {
                     $currentTags = request('tags', '');
                     $tagsArray = !empty($currentTags) ? array_map('trim', explode(',', $currentTags)) : [];
                     $isActive = in_array($tagValue, array_map('strtolower', $tagsArray));
+                    $tagIcon = $tagData['failed'] > 0 ? 'x-circle' : ($tagData['processed'] > 0 ? 'check-circle' : 'tag');
+                    $tagIconColor = $tagData['failed'] > 0 ? 'text-red-600' : ($tagData['processed'] > 0 ? 'text-green-600' : 'text-blue-600');
                 @endphp
                 <button type="button" 
                         data-tag="{{ $tagValue }}"
@@ -175,15 +177,7 @@ window.addTagToFilter = function(tag) {
                                {{ $tagData['failed'] > 0 ? 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100' : 
                                   ($tagData['processed'] > 0 ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 
                                   'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100') }}">
-                    <span class="mr-2">
-                        @if($tagData['failed'] > 0)
-                            ❌
-                        @elseif($tagData['processed'] > 0)
-                            ✅
-                        @else
-                            🏷️
-                        @endif
-                    </span>
+                    <i data-lucide="{{ $tagIcon }}" class="w-4 h-4 mr-2 {{ $tagIconColor }}" aria-hidden="true"></i>
                     <span>{{ $tagData['tag'] }}</span>
                     <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold {{ $tagData['failed'] > 0 ? 'bg-red-100 text-red-800' : ($tagData['processed'] > 0 ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800') }}">
                         {{ $tagData['total'] }}

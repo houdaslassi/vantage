@@ -483,7 +483,7 @@ class QueueMonitorController extends Controller
                 ->onQueue($run->queue ?? 'default')
                 ->onConnection($run->connection ?? config('queue.default'));
 
-            return back()->with('success', "✓ Job queued for retry!");
+        return back()->with('success', 'Job queued for retry!');
 
         } catch (\Throwable $e) {
                 VantageLogger::error('Vantage: Retry failed', [

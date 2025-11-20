@@ -41,7 +41,7 @@ class JobFailedNotification extends Notification implements ShouldQueue
             ->line('Attempts: '.$this->jobRun->attempt)
             ->line('Exception: '.$this->jobRun->exception_class)
             ->line('Message: '.$this->jobRun->exception_message)
-            ->line('— Queue Monitor');
+            ->line('- Queue Monitor');
     }
 
     public function toSlack($notifiable): SlackMessage

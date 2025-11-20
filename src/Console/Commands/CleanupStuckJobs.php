@@ -26,7 +26,7 @@ class CleanupStuckJobs extends Command
             ->get();
         
         if ($stuckJobs->isEmpty()) {
-            $this->info('✓ No stuck jobs found!');
+            $this->info('No stuck jobs found!');
             return self::SUCCESS;
         }
         
@@ -57,7 +57,7 @@ class CleanupStuckJobs extends Command
             ]);
         }
         
-        $this->info("✓ Marked {$stuckJobs->count()} stuck jobs as failed");
+        $this->info("Marked {$stuckJobs->count()} stuck jobs as failed");
         
         return self::SUCCESS;
     }

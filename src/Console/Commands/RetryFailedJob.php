@@ -46,7 +46,7 @@ class RetryFailedJob extends Command
             ->onQueue($run->queue ?? 'default')
             ->onConnection($run->connection ?? config('queue.default'));
 
-        $this->info("✓ Retried job {$jobClass} from run #{$run->id}");
+        $this->info("Retried job {$jobClass} from run #{$run->id}");
         
         if ($run->job_tags) {
             $this->line("Tags: " . implode(', ', $run->job_tags));

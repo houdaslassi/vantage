@@ -30,25 +30,25 @@
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="0">
-                    Tag <span class="sort-indicator">↕</span>
+                    Tag <span class="sort-indicator text-gray-400">--</span>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="1">
-                    Total Jobs <span class="sort-indicator">↕</span>
+                    Total Jobs <span class="sort-indicator text-gray-400">--</span>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="2">
-                    Processed <span class="sort-indicator">↕</span>
+                    Processed <span class="sort-indicator text-gray-400">--</span>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="3">
-                    Failed <span class="sort-indicator">↕</span>
+                    Failed <span class="sort-indicator text-gray-400">--</span>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="4">
-                    Processing <span class="sort-indicator">↕</span>
+                    Processing <span class="sort-indicator text-gray-400">--</span>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="5">
-                    Success Rate <span class="sort-indicator">↕</span>
+                    Success Rate <span class="sort-indicator text-gray-400">--</span>
                 </th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 sortable" data-column="6">
-                    Avg Duration <span class="sort-indicator">↕</span>
+                    Avg Duration <span class="sort-indicator text-gray-400">--</span>
                 </th>
             </tr>
         </thead>
@@ -57,8 +57,9 @@
                 <tr class="hover:bg-gray-50 tag-row" data-tag="{{ strtolower($tag) }}">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <a href="{{ route('vantage.jobs', ['tag' => $tag]) }}" 
-                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors">
-                            🏷️ {{ $tag }}
+                           class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors">
+                            <i data-lucide="tag" class="w-4 h-4" aria-hidden="true"></i>
+                            {{ $tag }}
                         </a>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium" data-sort="{{ $stats['total'] }}">
@@ -108,8 +109,11 @@
 
 @if(!empty($tagStats))
     <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <p class="text-sm text-blue-800">
-            💡 <strong>Tip:</strong> Use tags in your jobs to categorize them! Add a <code class="bg-blue-100 px-1 rounded">tags()</code> method to your job class.
+        <p class="text-sm text-blue-800 inline-flex items-center gap-2">
+            <i data-lucide="lightbulb" class="w-4 h-4" aria-hidden="true"></i>
+            <span>
+                <strong>Tip:</strong> Use tags in your jobs to categorize them! Add a <code class="bg-blue-100 px-1 rounded">tags()</code> method to your job class.
+            </span>
         </p>
     </div>
 @endif
@@ -162,9 +166,9 @@ document.querySelectorAll('.sortable').forEach(header => {
         
         // Update sort indicators
         document.querySelectorAll('.sort-indicator').forEach(ind => {
-            ind.textContent = '↕';
+            ind.textContent = '--';
         });
-        this.querySelector('.sort-indicator').textContent = direction === 'asc' ? '↑' : '↓';
+        this.querySelector('.sort-indicator').textContent = direction === 'asc' ? '^' : 'v';
     });
 });
 </script>

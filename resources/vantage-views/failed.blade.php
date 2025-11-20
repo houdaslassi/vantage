@@ -58,7 +58,9 @@
             @empty
                 <tr>
                     <td colspan="7" class="px-6 py-12 text-center">
-                        <div class="text-6xl mb-4">🎉</div>
+                        <div class="text-6xl mb-4 flex justify-center">
+                            <i data-lucide="star" class="w-14 h-14 text-amber-500" aria-hidden="true"></i>
+                        </div>
                         <p class="text-gray-500 text-lg">No failed jobs!</p>
                         <p class="text-gray-400 text-sm mt-2">All your queue jobs are running smoothly.</p>
                     </td>

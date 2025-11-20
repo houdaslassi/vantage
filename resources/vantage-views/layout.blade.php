@@ -16,8 +16,9 @@
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="{{ route('vantage.dashboard') }}" class="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors">
-                            🎯 Vantage
+                        <a href="{{ route('vantage.dashboard') }}" class="text-xl font-bold text-gray-900 hover:text-indigo-600 transition-colors inline-flex items-center gap-2">
+                            <i data-lucide="target" class="w-6 h-6 text-indigo-600" aria-hidden="true"></i>
+                            Vantage
                         </a>
                     </div>
                     <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
@@ -59,6 +60,14 @@
 
         @yield('content')
     </main>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
 </body>
 </html>
 
