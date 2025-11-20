@@ -218,7 +218,7 @@ window.addTagToFilter = function(tag) {
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ $job->id }}</td>
                     <td class="px-6 py-4 text-sm font-medium text-gray-900" title="{{ $job->job_class }}">
-                        {{ Str::limit(class_basename($job->job_class), 40) }}
+                        {{ str(class_basename($job->job_class))->limit(40) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $job->queue ?? 'default' }}
