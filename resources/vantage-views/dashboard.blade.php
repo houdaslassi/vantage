@@ -674,7 +674,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('successRateChart');
     
     if (!ctx) {
-        console.error('Chart canvas element not found!');
         return;
     }
     
@@ -683,11 +682,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const totals = @json($jobsByHour->pluck('count'));
     const failures = @json($jobsByHour->pluck('failed_count'));
     
-    console.log('Chart data:', { hours, totals, failures });
-    
     // Ensure we have data
     if (!hours || hours.length === 0) {
-        console.warn('No chart data available');
         return;
     }
     
@@ -707,25 +703,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const isoDate = h.replace(' ', 'T');
             const date = new Date(isoDate);
             if (isNaN(date.getTime())) {
-                console.warn('Invalid date:', h);
                 return h;
             }
-            const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' });
-            return formatted;
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' });
         } catch (e) {
-            console.error('Date parsing error:', e, h);
             return h;
         }
-    });
-    
-    console.log('Chart labels:', labels);
-    console.log('Success rates:', successRates);
-    
-    console.log('Creating chart with data:', {
-        labels: labels,
-        successRates: successRates,
-        totals: totals,
-        failures: failures
     });
     
     try {
@@ -838,9 +821,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    console.log('Chart created successfully');
     } catch (error) {
-        console.error('Chart creation failed:', error);
         // Show error message to user
         if (ctx && ctx.parentElement) {
             ctx.parentElement.innerHTML = '<div class="p-4 text-red-600">Error loading chart: ' + error.message + '</div>';
