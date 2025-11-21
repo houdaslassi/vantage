@@ -703,6 +703,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const isoDate = h.replace(' ', 'T');
             const date = new Date(isoDate);
             if (isNaN(date.getTime())) {
+                // Fallback: try parsing as-is
+                const fallbackDate = new Date(h);
+                if (!isNaN(fallbackDate.getTime())) {
+                    return fallbackDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' });
+                }
                 return h;
             }
             return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' });
@@ -711,9 +716,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Ensure we have valid data
+    if (labels.length === 0 || successRates.length === 0 || totals.length === 0) {
+        return;
+    }
+    
     try {
         // Ensure single data points are visible with larger point radius
         const pointRadius = labels.length === 1 ? 8 : 3;
+        const pointHoverRadius = labels.length === 1 ? 10 : 5;
         
         const chart = new Chart(ctx, {
         type: 'line',
@@ -729,7 +740,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     fill: true,
                     yAxisID: 'y',
                     pointRadius: pointRadius,
-                    pointHoverRadius: pointRadius + 2,
+                    pointHoverRadius: pointHoverRadius,
+                    pointBackgroundColor: function(context) {
+                        return context.dataset.borderColor;
+                    },
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
                 },
                 {
                     label: 'Total Jobs',
@@ -740,7 +756,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     fill: true,
                     yAxisID: 'y1',
                     pointRadius: pointRadius,
-                    pointHoverRadius: pointRadius + 2,
+                    pointHoverRadius: pointHoverRadius,
+                    pointBackgroundColor: function(context) {
+                        return context.dataset.borderColor;
+                    },
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
                 },
                 {
                     label: 'Failed Jobs',
@@ -751,7 +772,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     fill: true,
                     yAxisID: 'y1',
                     pointRadius: pointRadius,
-                    pointHoverRadius: pointRadius + 2,
+                    pointHoverRadius: pointHoverRadius,
+                    pointBackgroundColor: function(context) {
+                        return context.dataset.borderColor;
+                    },
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
                 }
             ]
         },
@@ -792,7 +818,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Ensure x-axis displays even with single data point
                     ticks: {
                         autoSkip: false,
-                    }
+                        maxRotation: 45,
+                        minRotation: 0,
+                    },
+                    // For single point, ensure it's visible
+                    min: undefined,
+                    max: undefined,
                 },
                 y: {
                     type: 'linear',
@@ -803,7 +834,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         text: 'Success Rate (%)'
                     },
                     min: 0,
-                    max: 100
+                    max: 100,
+                    beginAtZero: true,
                 },
                 y1: {
                     type: 'linear',
@@ -813,6 +845,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         display: true,
                         text: 'Job Count'
                     },
+                    beginAtZero: true,
                     grid: {
                         drawOnChartArea: false,
                     },
