@@ -677,13 +677,26 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Prepare data
-    const hours = @json($jobsByHour->pluck('hour'));
-    const totals = @json($jobsByHour->pluck('count'));
-    const failures = @json($jobsByHour->pluck('failed_count'));
+    // Prepare data - ensure we get proper arrays
+    const jobsData = @json($jobsByHour->toArray());
     
-    // Ensure we have data
-    if (!hours || hours.length === 0) {
+    if (!jobsData || jobsData.length === 0) {
+        if (ctx && ctx.parentElement) {
+            ctx.parentElement.innerHTML = '<div class="p-4 text-gray-500 text-center">No data available for the selected time period.</div>';
+        }
+        return;
+    }
+    
+    // Extract arrays from data
+    const hours = jobsData.map(item => item.hour);
+    const totals = jobsData.map(item => parseInt(item.count) || 0);
+    const failures = jobsData.map(item => parseInt(item.failed_count) || 0);
+    
+    // Ensure arrays are valid and same length
+    if (hours.length === 0 || totals.length === 0 || hours.length !== totals.length) {
+        if (ctx && ctx.parentElement) {
+            ctx.parentElement.innerHTML = '<div class="p-4 text-gray-500 text-center">No data available for the selected time period.</div>';
+        }
         return;
     }
     
@@ -721,72 +734,115 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    // For single data point, create a small time range to show as a line
+    // This ensures the chart always shows as a line chart with filled area
+    let chartLabels = labels;
+    let chartSuccessRates = successRates;
+    let chartTotals = totals;
+    let chartFailures = failures;
+    
+    if (labels.length === 1) {
+        // Create a second point 1 hour later to form a line segment
+        try {
+            const singleDate = new Date(hours[0].replace(' ', 'T'));
+            const nextHour = new Date(singleDate.getTime() + 60 * 60 * 1000);
+            const nextLabel = nextHour.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' });
+            
+            chartLabels = [labels[0], nextLabel];
+            chartSuccessRates = [successRates[0], successRates[0]];
+            chartTotals = [totals[0], totals[0]];
+            chartFailures = [failures[0], failures[0]];
+        } catch (e) {
+            // Fallback: just duplicate if date parsing fails
+            chartLabels = [labels[0], labels[0]];
+            chartSuccessRates = [successRates[0], successRates[0]];
+            chartTotals = [totals[0], totals[0]];
+            chartFailures = [failures[0], failures[0]];
+        }
+    }
+    
     try {
-        // Ensure single data points are visible with larger point radius
-        const pointRadius = labels.length === 1 ? 8 : 3;
-        const pointHoverRadius = labels.length === 1 ? 10 : 5;
+        // Point radius - smaller for single point (since we duplicate it)
+        const pointRadius = 4;
+        const pointHoverRadius = 6;
         
         const chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: chartLabels,
             datasets: [
                 {
                     label: 'Success Rate (%)',
-                    data: successRates,
+                    data: chartSuccessRates,
                     borderColor: 'rgb(34, 197, 94)',
                     backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
                     tension: 0.4,
                     fill: true,
                     yAxisID: 'y',
                     pointRadius: pointRadius,
                     pointHoverRadius: pointHoverRadius,
-                    pointBackgroundColor: function(context) {
-                        return context.dataset.borderColor;
-                    },
+                    pointBackgroundColor: 'rgb(34, 197, 94)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
+                    // Ensure line is visible even with single point
+                    spanGaps: false,
+                    showLine: true,
                 },
                 {
                     label: 'Total Jobs',
-                    data: totals,
+                    data: chartTotals,
                     borderColor: 'rgb(99, 102, 241)',
                     backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
                     tension: 0.4,
                     fill: true,
                     yAxisID: 'y1',
                     pointRadius: pointRadius,
                     pointHoverRadius: pointHoverRadius,
-                    pointBackgroundColor: function(context) {
-                        return context.dataset.borderColor;
-                    },
+                    pointBackgroundColor: 'rgb(99, 102, 241)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
+                    spanGaps: false,
+                    showLine: true,
                 },
                 {
                     label: 'Failed Jobs',
-                    data: failures,
+                    data: chartFailures,
                     borderColor: 'rgb(239, 68, 68)',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
                     tension: 0.4,
                     fill: true,
                     yAxisID: 'y1',
                     pointRadius: pointRadius,
                     pointHoverRadius: pointHoverRadius,
-                    pointBackgroundColor: function(context) {
-                        return context.dataset.borderColor;
-                    },
+                    pointBackgroundColor: 'rgb(239, 68, 68)',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2,
+                    spanGaps: false,
+                    showLine: true,
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 750,
+            },
             interaction: {
                 mode: 'index',
                 intersect: false,
+            },
+            elements: {
+                line: {
+                    borderJoinStyle: 'round',
+                    borderCapStyle: 'round',
+                },
+                point: {
+                    hoverRadius: 8,
+                }
             },
             plugins: {
                 legend: {
