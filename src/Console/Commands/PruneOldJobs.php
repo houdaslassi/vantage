@@ -43,10 +43,8 @@ class PruneOldJobs extends Command
             }
         }
 
-        // Build query
         $query = VantageJob::where('created_at', '<', $cutoff);
 
-        // Apply status filter
         if ($statusFilter) {
             $query->where('status', $statusFilter);
         }
