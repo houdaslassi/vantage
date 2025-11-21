@@ -161,7 +161,7 @@ php artisan vendor:publish --tag=vantage-config
 
 - `store_payload` - Whether to store job payloads (for debugging/retry)
 - `redact_keys` - Keys to redact from payloads (password, token, etc.)
-- `retention_days` - How long to keep job history
+- `retention_days` - Default number of days to keep job history (used by `vantage:prune` command, default: 14)
 - `routes` - Master switch to register dashboard routes
 - `route_prefix` - Base URI segment for all dashboard routes (default: `vantage`)
 - `logging.enabled` - Toggle Vantage's own log output
@@ -267,6 +267,67 @@ php artisan vantage:cleanup-stuck --timeout=2
 php artisan vantage:cleanup-stuck --dry-run
 ```
 
+### Prune Old Jobs
+
+```bash
+php artisan vantage:prune [--days=30] [--hours=] [--status=] [--keep-processing] [--dry-run] [--force]
+```
+
+Prune old job records from the database to free up space. This is essential for high-volume applications where the database can grow very large over time.
+
+**Options:**
+- `--days=30` - Keep jobs from the last X days (defaults to `retention_days` config value or 30)
+- `--hours=` - Keep jobs from the last X hours (overrides `--days`)
+- `--status=` - Only prune jobs with specific status (`processed`, `failed`, or `processing`). Leave empty to prune all
+- `--keep-processing` - Always keep jobs with "processing" status (recommended)
+- `--dry-run` - Show what would be deleted without actually deleting
+- `--force` - Skip confirmation prompt
+
+**Examples:**
+```bash
+# Prune jobs older than 30 days (uses config default)
+php artisan vantage:prune
+
+# Prune jobs older than 7 days, keeping processing jobs
+php artisan vantage:prune --days=7 --keep-processing
+
+# Prune only failed jobs older than 14 days
+php artisan vantage:prune --days=14 --status=failed
+
+# Preview what would be deleted
+php artisan vantage:prune --days=30 --dry-run
+
+# Prune jobs older than 12 hours
+php artisan vantage:prune --hours=12 --force
+```
+
+**Scheduling Automatic Cleanup:**
+
+Add this to your `app/Console/Kernel.php` to automatically prune old jobs:
+
+```php
+protected function schedule(Schedule $schedule)
+{
+    // Prune jobs older than retention_days config (uses VANTAGE_RETENTION_DAYS or default: 14 days)
+    // --force skips confirmation prompt (required for scheduled tasks)
+    // --keep-processing preserves active jobs
+    $schedule->command('vantage:prune --force --keep-processing')
+        ->daily()
+        ->at('02:00');
+}
+```
+
+**For scheduled tasks:**
+- Use `--force` to skip confirmation (required for unattended execution)
+- Omit `--days` to use `vantage.retention_days` config value automatically
+- The command will show "(from config: vantage.retention_days)" in the output when using config
+
+**Important Notes:**
+- The command handles retry chain relationships automatically (orphans children when parents are deleted)
+- Processing jobs are preserved by default to avoid deleting active work
+- Deletion happens in chunks to avoid memory issues with large datasets
+- Use `--dry-run` first to preview what will be deleted
+
 ## Environment Variables
 
 ```env
@@ -286,6 +347,9 @@ VANTAGE_STORE_PAYLOAD=true
 VANTAGE_TELEMETRY_ENABLED=true
 VANTAGE_TELEMETRY_SAMPLE_RATE=1.0
 VANTAGE_TELEMETRY_CPU=true
+
+# Data retention (default: 14 days)
+VANTAGE_RETENTION_DAYS=14
 
 # Notifications
 VANTAGE_NOTIFY_EMAIL=admin@example.com

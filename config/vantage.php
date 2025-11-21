@@ -48,9 +48,10 @@ return [
     |
     | Number of days to keep job run history. Older records will be pruned.
     | Set to null to keep records indefinitely.
+    | This value is used as the default for the `vantage:prune` command.
     |
     */
-    'retention_days' => 14,
+    'retention_days' => env('VANTAGE_RETENTION_DAYS', 14),
 
     /*
     |--------------------------------------------------------------------------

@@ -34,6 +34,7 @@ class VantageServiceProvider extends ServiceProvider
             $this->commands([
                 Console\Commands\RetryFailedJob::class,
                 Console\Commands\CleanupStuckJobs::class,
+                Console\Commands\PruneOldJobs::class,
                 //Console\Commands\ListJobs::class,
                 //Console\Commands\TagStats::class,
             ]);
