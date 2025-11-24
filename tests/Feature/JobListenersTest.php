@@ -266,3 +266,72 @@ it('extracts and stores job tags', function () {
     // This would work with real Laravel jobs that implement tags()
 });
 
+it('does not mark job as processed when job is released (rate-limited)', function () {
+    // Create a processing job first
+    $jobRun = VantageJob::create([
+        'uuid' => 'rate-limited-uuid',
+        'job_class' => 'App\\Jobs\\RateLimitedJob',
+        'status' => 'processing',
+        'started_at' => now()->subSeconds(5),
+    ]);
+
+    // Mock a job that was released (not deleted) - simulates rate-limiting
+    $job = new class {
+        public $queue = 'default';
+        public function getQueue() { return $this->queue; }
+        public function attempts() { return 1; }
+        public function uuid() { return 'rate-limited-uuid'; }
+        public function resolveName() { return 'App\\Jobs\\RateLimitedJob'; }
+        public function isDeleted() { return false; } // Job was released, not deleted
+    };
+
+    $event = new JobProcessed('test-connection', $job);
+    $listener = new RecordJobSuccess();
+    $listener->handle($event);
+
+    // Verify the record is still in processing state (not marked as processed)
+    $record = VantageJob::where('uuid', 'rate-limited-uuid')->first();
+
+    expect($record->id)->toBe($jobRun->id)
+        ->and($record->status)->toBe('processing') // Should remain processing
+        ->and($record->finished_at)->toBeNull(); // Should not have finish time
+
+    // Verify no duplicate records were created
+    expect(VantageJob::where('uuid', 'rate-limited-uuid')->count())->toBe(1);
+});
+
+it('marks job as processed when job is actually deleted (completed)', function () {
+    // Create a processing job first
+    $jobRun = VantageJob::create([
+        'uuid' => 'completed-uuid',
+        'job_class' => 'App\\Jobs\\CompletedJob',
+        'status' => 'processing',
+        'started_at' => now()->subSeconds(5),
+    ]);
+
+    // Mock a job that was deleted (actually completed)
+    $job = new class {
+        public $queue = 'default';
+        public function getQueue() { return $this->queue; }
+        public function attempts() { return 1; }
+        public function uuid() { return 'completed-uuid'; }
+        public function resolveName() { return 'App\\Jobs\\CompletedJob'; }
+        public function isDeleted() { return true; } // Job was deleted (completed)
+    };
+
+    $event = new JobProcessed('test-connection', $job);
+    $listener = new RecordJobSuccess();
+    $listener->handle($event);
+
+    // Verify the record is marked as processed
+    $record = VantageJob::where('uuid', 'completed-uuid')->first();
+
+    expect($record->id)->toBe($jobRun->id)
+        ->and($record->status)->toBe('processed') // Should be marked as processed
+        ->and($record->finished_at)->not->toBeNull()
+        ->and($record->duration_ms)->toBeGreaterThan(0);
+
+    // Verify no duplicate records were created
+    expect(VantageJob::where('uuid', 'completed-uuid')->count())->toBe(1);
+});
+

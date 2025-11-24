@@ -23,6 +23,16 @@ class RecordJobSuccess
             return;
         }
 
+        // Check if the job was actually deleted (completed) or just released (rate-limited, delayed, etc.)
+        // If the job was released, skip this event to avoid counting it as processed
+        if (method_exists($event->job, 'isDeleted') && !$event->job->isDeleted()) {
+            VantageLogger::debug('Queue Monitor: Job was released (not deleted), skipping processed event', [
+                'job_class' => $this->jobClass($event),
+                'uuid' => $this->bestUuid($event),
+            ]);
+            return;
+        }
+
         $uuid = $this->bestUuid($event);
         $jobClass = $this->jobClass($event);
         $queue = $event->job->getQueue();
