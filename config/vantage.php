@@ -55,6 +55,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard Default Range
+    |--------------------------------------------------------------------------
+    |
+    | Default time range for dashboard statistics and charts.
+    | This controls how much historical data is loaded on the dashboard.
+    | In high-traffic applications, loading 30 days of data can cause
+    | performance issues. Set this to a lower value (e.g., 7 or 4) to
+    | improve dashboard load times.
+    |
+    | Supported values: 1 (1 hour), 6 (6 hours), 24 (24 hours), 7 (7 days),
+    | 30 (30 days), or 'all' (all time)
+    |
+    | Default: 30 days
+    |
+    */
+    'dashboard_default_range' => env('VANTAGE_DASHBOARD_RANGE', 30),
+
+    /*
+    |--------------------------------------------------------------------------
     | Failure Notifications
     |--------------------------------------------------------------------------
     |

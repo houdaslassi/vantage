@@ -18,7 +18,8 @@ class QueueMonitorController extends Controller
      */
     public function index(Request $request)
     {
-        $period = $request->get('period', '30d'); // Changed default to 30 days
+        $defaultRange = $this->getDefaultPeriod();
+        $period = $request->get('period', $defaultRange);
         $since = $this->getSinceDate($period);
 
         // Overall statistics
@@ -599,6 +600,30 @@ class QueueMonitorController extends Controller
             '30d' => now()->subDays(30),
             'all' => now()->subYears(100), // All time
             default => now()->subDays(30),
+        };
+    }
+
+    /**
+     * Get default period string from config
+     * Converts numeric config values to period strings (e.g., 7 -> '7d')
+     */
+    protected function getDefaultPeriod(): string
+    {
+        $configValue = config('vantage.dashboard_default_range', 30);
+
+        // If it's already a string (like 'all'), return it
+        if (is_string($configValue)) {
+            return $configValue;
+        }
+
+        // Convert numeric values to period strings
+        return match((int) $configValue) {
+            1 => '1h',
+            6 => '6h',
+            24 => '24h',
+            7 => '7d',
+            30 => '30d',
+            default => '30d',
         };
     }
 }
