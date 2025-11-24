@@ -23,6 +23,22 @@ class RecordJobSuccess
             return;
         }
 
+        // Some jobs (like rate-limited ones) are "processed" only to be released immediately.
+        // Laravel exposes helpers to detect this so we don't count them as successful runs.
+        if (method_exists($event->job, 'isReleased') && $event->job->isReleased()) {
+            VantageLogger::debug('Queue Monitor: Job was released, skipping processed record', [
+                'job_class' => $this->jobClass($event),
+            ]);
+            return;
+        }
+
+        if (method_exists($event->job, 'isDeletedOrReleased') && $event->job->isDeletedOrReleased()) {
+            VantageLogger::debug('Queue Monitor: Job was deleted or released, skipping processed record', [
+                'job_class' => $this->jobClass($event),
+            ]);
+            return;
+        }
+
         $uuid = $this->bestUuid($event);
         $jobClass = $this->jobClass($event);
         $queue = $event->job->getQueue();
