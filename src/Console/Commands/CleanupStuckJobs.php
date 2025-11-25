@@ -21,7 +21,7 @@ class CleanupStuckJobs extends Command
         $cutoff = now()->subHours($timeoutHours);
         
         // Find stuck jobs
-        $stuckJobs = VantageJob::where('status', 'processing')
+        $stuckJobs = VantageJob::query()->where('status', 'processing')
             ->where('started_at', '<', $cutoff)
             ->get();
         

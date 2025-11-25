@@ -3,14 +3,11 @@
 declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
-use Rector\TypeDeclaration\Rector\ClassMethod\AddVoidReturnTypeWhereNoReturnRector;
-use Rector\TypeDeclaration\Rector\ClassMethod\ReturnTypeFromReturnNewRector;
-use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromStrictConstructorRector;
-use Rector\CodeQuality\Rector\Class_\InlineConstructorDefaultToPropertyRector;
 use Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
-use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
 
+// Rector configuration for Laravel 10/11 compatibility
+// Note: Avoids generic types (not supported in Laravel 10 PHPDoc)
 return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/src',
@@ -41,21 +38,6 @@ return RectorConfig::configure()
     ->withRules([
         // Constructor promotion (PHP 8.0+)
         ClassPropertyAssignToConstructorPromotionRector::class,
-
-        // Inline constructor defaults to properties
-        InlineConstructorDefaultToPropertyRector::class,
-
-        // Add void return type where no return
-        AddVoidReturnTypeWhereNoReturnRector::class,
-
-        // Typed properties from strict constructor
-        TypedPropertyFromStrictConstructorRector::class,
-
-        // Readonly properties (PHP 8.1+)
-        ReadOnlyPropertyRector::class,
-
-        // Return type from return new
-        ReturnTypeFromReturnNewRector::class,
     ])
     ->withImportNames(
         importShortClasses: false,  // Don't import classes from global namespace

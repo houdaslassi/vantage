@@ -64,7 +64,7 @@ class RecordJobSuccess
                           || (method_exists($jobProcessed->job, 'getJobId') && $jobProcessed->job->getJobId());
 
             if ($hasStableUuid) {
-                $row = VantageJob::where('uuid', $uuid)
+                $row = VantageJob::query()->where('uuid', $uuid)
                     ->where('status', JobStatus::Processing)
                     ->first();
             }
@@ -72,7 +72,7 @@ class RecordJobSuccess
             // Fallback: try by job class, queue, connection (ONLY if UUID not available)
             // This should rarely be needed since Laravel 8+ provides uuid()
             if (!$row && !$hasStableUuid) {
-                $row = VantageJob::where('job_class', $jobClass)
+                $row = VantageJob::query()->where('job_class', $jobClass)
                     ->where('queue', $queue)
                     ->where('connection', $connection)
                     ->where('status', JobStatus::Processing)

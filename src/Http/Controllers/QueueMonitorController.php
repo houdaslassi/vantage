@@ -24,13 +24,13 @@ class QueueMonitorController extends Controller
         $since = $this->getSinceDate($period);
 
         $stats = [
-            'total' => VantageJob::where('created_at', '>', $since)->count(),
-            'processed' => VantageJob::where('created_at', '>', $since)->where('status', JobStatus::Processed)->count(),
-            'failed' => VantageJob::where('created_at', '>', $since)->where('status', JobStatus::Failed)->count(),
-            'processing' => VantageJob::where('status', JobStatus::Processing)
+            'total' => VantageJob::query()->where('created_at', '>', $since)->count(),
+            'processed' => VantageJob::query()->where('created_at', '>', $since)->where('status', JobStatus::Processed)->count(),
+            'failed' => VantageJob::query()->where('created_at', '>', $since)->where('status', JobStatus::Failed)->count(),
+            'processing' => VantageJob::query()->where('status', JobStatus::Processing)
                 ->where('created_at', '>', now()->subHour())
                 ->count(),
-            'avg_duration' => VantageJob::where('created_at', '>', $since)
+            'avg_duration' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('duration_ms')
                 ->avg('duration_ms'),
         ];
@@ -40,7 +40,7 @@ class QueueMonitorController extends Controller
             ? round(($stats['processed'] / $completedJobs) * 100, 1)
             : 0;
 
-        $recentJobs = VantageJob::select([
+        $recentJobs = VantageJob::query()->select([
                 'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
                 'status', 'started_at', 'finished_at', 'duration_ms',
                 'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
@@ -50,7 +50,7 @@ class QueueMonitorController extends Controller
             ->limit(20)
             ->get();
 
-        $jobsByStatus = VantageJob::select('status', DB::raw('count(*) as count'))
+        $jobsByStatus = VantageJob::query()->select('status', DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->groupBy('status')
             ->get()
@@ -71,7 +71,7 @@ class QueueMonitorController extends Controller
         }
 
         $failedValue = JobStatus::Failed->value;
-        $jobsByHour = VantageJob::select(
+        $jobsByHour = VantageJob::query()->select(
                 $dateFormat,
                 DB::raw('count(*) as count'),
                 DB::raw("sum(case when status = '{$failedValue}' then 1 else 0 end) as failed_count")
@@ -81,7 +81,7 @@ class QueueMonitorController extends Controller
             ->orderBy('hour')
             ->get();
 
-        $topFailingJobs = VantageJob::select('job_class', DB::raw('count(*) as failure_count'))
+        $topFailingJobs = VantageJob::query()->select('job_class', DB::raw('count(*) as failure_count'))
             ->where('created_at', '>', $since)
             ->where('status', JobStatus::Failed)
             ->groupBy('job_class')
@@ -89,7 +89,7 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        $topExceptions = VantageJob::select('exception_class', DB::raw('count(*) as count'))
+        $topExceptions = VantageJob::query()->select('exception_class', DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->whereNotNull('exception_class')
             ->groupBy('exception_class')
@@ -97,7 +97,7 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        $slowestJobs = VantageJob::select('job_class', DB::raw('AVG(duration_ms) as avg_duration'), DB::raw('MAX(duration_ms) as max_duration'), DB::raw('count(*) as count'))
+        $slowestJobs = VantageJob::query()->select('job_class', DB::raw('AVG(duration_ms) as avg_duration'), DB::raw('MAX(duration_ms) as max_duration'), DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->whereNotNull('duration_ms')
             ->groupBy('job_class')
@@ -105,7 +105,7 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        $topTags = VantageJob::select(['job_tags', 'status', 'job_class'])
+        $topTags = VantageJob::query()->select(['job_tags', 'status', 'job_class'])
             ->where('created_at', '>', $since)
             ->whereNotNull('job_tags')
             ->get()
@@ -153,22 +153,22 @@ class QueueMonitorController extends Controller
 
         // Performance statistics
         $performanceStats = [
-            'avg_memory_start_bytes' => VantageJob::where('created_at', '>', $since)
+            'avg_memory_start_bytes' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('memory_start_bytes')
                 ->avg('memory_start_bytes'),
-            'avg_memory_end_bytes' => VantageJob::where('created_at', '>', $since)
+            'avg_memory_end_bytes' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('memory_end_bytes')
                 ->avg('memory_end_bytes'),
-            'avg_memory_peak_end_bytes' => VantageJob::where('created_at', '>', $since)
+            'avg_memory_peak_end_bytes' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('memory_peak_end_bytes')
                 ->avg('memory_peak_end_bytes'),
-            'max_memory_peak_end_bytes' => VantageJob::where('created_at', '>', $since)
+            'max_memory_peak_end_bytes' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('memory_peak_end_bytes')
                 ->max('memory_peak_end_bytes'),
-            'avg_cpu_user_ms' => VantageJob::where('created_at', '>', $since)
+            'avg_cpu_user_ms' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('cpu_user_ms')
                 ->avg('cpu_user_ms'),
-            'avg_cpu_sys_ms' => VantageJob::where('created_at', '>', $since)
+            'avg_cpu_sys_ms' => VantageJob::query()->where('created_at', '>', $since)
                 ->whereNotNull('cpu_sys_ms')
                 ->avg('cpu_sys_ms'),
         ];
@@ -182,7 +182,7 @@ class QueueMonitorController extends Controller
         $performanceStats['avg_cpu_total_ms'] = $avgCpuTotal;
 
         // Top memory-consuming jobs
-        $topMemoryJobs = VantageJob::select('job_class', DB::raw('AVG(memory_peak_end_bytes) as avg_memory_peak'), DB::raw('MAX(memory_peak_end_bytes) as max_memory_peak'), DB::raw('count(*) as count'))
+        $topMemoryJobs = VantageJob::query()->select('job_class', DB::raw('AVG(memory_peak_end_bytes) as avg_memory_peak'), DB::raw('MAX(memory_peak_end_bytes) as max_memory_peak'), DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->whereNotNull('memory_peak_end_bytes')
             ->groupBy('job_class')
@@ -191,7 +191,7 @@ class QueueMonitorController extends Controller
             ->get();
 
         // Top CPU-consuming jobs
-        $topCpuJobs = VantageJob::select(
+        $topCpuJobs = VantageJob::query()->select(
                 'job_class',
                 DB::raw('AVG(cpu_user_ms) as avg_cpu_user'),
                 DB::raw('AVG(cpu_sys_ms) as avg_cpu_sys'),
@@ -217,7 +217,7 @@ class QueueMonitorController extends Controller
     public function jobs(Request $request): Factory|View
     {
         // Exclude large columns (payload, stack) from jobs list to improve performance
-        $query = VantageJob::select([
+        $query = VantageJob::query()->select([
             'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
             'status', 'started_at', 'finished_at', 'duration_ms',
             'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
@@ -332,7 +332,7 @@ class QueueMonitorController extends Controller
         $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn($c): string => class_basename($c))->filter();
 
         // Get all available tags with counts - only select needed columns
-        $allTags = VantageJob::select(['job_tags', 'status'])
+        $allTags = VantageJob::query()->select(['job_tags', 'status'])
             ->whereNotNull('job_tags')
             ->get()
             ->flatMap(fn($job) => collect($job->job_tags)->map(fn($tag): array => [
@@ -378,7 +378,7 @@ class QueueMonitorController extends Controller
         $since = $this->getSinceDate($period);
 
         // Get all jobs with tags - only select needed columns
-        $jobs = VantageJob::select(['job_tags', 'status', 'duration_ms'])
+        $jobs = VantageJob::query()->select(['job_tags', 'status', 'duration_ms'])
             ->whereNotNull('job_tags')
             ->where('created_at', '>', $since)
             ->get();
@@ -432,7 +432,7 @@ class QueueMonitorController extends Controller
     {
         // Exclude large columns (payload) from failed jobs list
         // Keep stack for debugging, but exclude payload
-        $jobs = VantageJob::select([
+        $jobs = VantageJob::query()->select([
                 'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
                 'status', 'started_at', 'finished_at', 'duration_ms',
                 'exception_class', 'exception_message', 'stack', 'job_tags',

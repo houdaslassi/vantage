@@ -43,7 +43,7 @@ class PruneOldJobs extends Command
             }
         }
 
-        $query = VantageJob::where('created_at', '<', $cutoff);
+        $query = VantageJob::query()->where('created_at', '<', $cutoff);
 
         if ($statusFilter) {
             $query->where('status', $statusFilter);
@@ -74,7 +74,7 @@ class PruneOldJobs extends Command
         }
 
         // Show breakdown by status
-        $breakdown = VantageJob::where('created_at', '<', $cutoff)
+        $breakdown = VantageJob::query()->where('created_at', '<', $cutoff)
             ->when($statusFilter, fn($q) => $q->where('status', $statusFilter))
             ->when($keepProcessing || (!$statusFilter && !$keepProcessing), fn($q) => $q->where('status', '!=', 'processing'))
             ->select('status', DB::raw('count(*) as count'))
