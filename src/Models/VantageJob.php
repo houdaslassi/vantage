@@ -88,8 +88,6 @@ class VantageJob extends Model
 
     /**
      * Get the job that this was retried from
-     *
-     * @return BelongsTo<VantageJob, VantageJob>
      */
     public function retriedFrom(): BelongsTo
     {
@@ -98,8 +96,6 @@ class VantageJob extends Model
 
     /**
      * Get all retry attempts of this job
-     *
-     * @return HasMany<VantageJob>
      */
     public function retries(): HasMany
     {
@@ -123,7 +119,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by tag
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeWithTag($query, string $tag): void
     {
@@ -133,7 +129,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by any of multiple tags
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      * @param array<string> $tags
      */
     public function scopeWithAnyTag($query, array $tags): void
@@ -148,7 +144,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by all tags (must have all)
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      * @param array<string> $tags
      */
     public function scopeWithAllTags($query, array $tags): void
@@ -161,7 +157,7 @@ class VantageJob extends Model
     /**
      * Scope: Exclude jobs with specific tag
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeWithoutTag($query, string $tag): void
     {
@@ -174,7 +170,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by job class
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeOfClass($query, string $class): void
     {
@@ -184,7 +180,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by status
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeWithStatus($query, JobStatus|string $status): void
     {
@@ -195,7 +191,7 @@ class VantageJob extends Model
     /**
      * Scope: Failed jobs only
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeFailed($query): void
     {
@@ -205,7 +201,7 @@ class VantageJob extends Model
     /**
      * Scope: Successful jobs only
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeSuccessful($query): void
     {
@@ -215,7 +211,7 @@ class VantageJob extends Model
     /**
      * Scope: Processing jobs only
      *
-     * @param Builder<VantageJob> $query
+     * @param Builder $query
      */
     public function scopeProcessing($query): void
     {

@@ -7,12 +7,6 @@ parameters:
 			path: src/Console/Commands/CleanupStuckJobs.php
 
 		-
-			message: '#^Parameter \#1 \$value of method Carbon\\Carbon\:\:subHours\(\) expects float\|int, array\|bool\|string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Console/Commands/CleanupStuckJobs.php
-
-		-
 			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:count\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
@@ -201,24 +195,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$memory_delta_bytes\.$#'
 			identifier: property.notFound
-			count: 1
-			path: src/Models/VantageJob.php
-
-		-
-			message: '#^Generic type Illuminate\\Database\\Eloquent\\Relations\\HasMany\<HoudaSlassi\\Vantage\\Models\\VantageJob\> in PHPDoc tag @return does not specify all template types of class Illuminate\\Database\\Eloquent\\Relations\\HasMany\: TRelatedModel, TDeclaringModel$#'
-			identifier: generics.lessTypes
-			count: 1
-			path: src/Models/VantageJob.php
-
-		-
-			message: '#^Method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:retriedFrom\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<HoudaSlassi\\Vantage\\Models\\VantageJob, HoudaSlassi\\Vantage\\Models\\VantageJob\> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<HoudaSlassi\\Vantage\\Models\\VantageJob, \$this\(HoudaSlassi\\Vantage\\Models\\VantageJob\)\>\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Models/VantageJob.php
-
-		-
-			message: '#^Method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:retries\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<HoudaSlassi\\Vantage\\Models\\VantageJob\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<HoudaSlassi\\Vantage\\Models\\VantageJob, \$this\(HoudaSlassi\\Vantage\\Models\\VantageJob\)\>\.$#'
-			identifier: return.type
 			count: 1
 			path: src/Models/VantageJob.php
 

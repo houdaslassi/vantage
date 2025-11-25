@@ -15,9 +15,9 @@ class CleanupStuckJobs extends Command
     
     public function handle(): int
     {
-        $timeoutHours = $this->option('timeout');
+        $timeoutHours = (int) $this->option('timeout');
         $dryRun = $this->option('dry-run');
-        
+
         $cutoff = now()->subHours($timeoutHours);
         
         // Find stuck jobs
