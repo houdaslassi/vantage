@@ -60,36 +60,30 @@ class VantageJob extends Model
     protected static $unguarded = true;
 
     /**
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'started_at'  => 'datetime',
+        'finished_at' => 'datetime',
+        'job_tags'    => 'array',
+        'payload'     => 'array',
+        'status'      => JobStatus::class,
+        'duration_ms' => 'integer',
+        'memory_start_bytes' => 'integer',
+        'memory_end_bytes' => 'integer',
+        'memory_peak_start_bytes' => 'integer',
+        'memory_peak_end_bytes' => 'integer',
+        'memory_peak_delta_bytes' => 'integer',
+        'cpu_user_ms' => 'integer',
+        'cpu_sys_ms' => 'integer',
+    ];
+
+    /**
      * Get the database connection for the model.
      */
     public function getConnectionName(): ?string
     {
         return config('vantage.database_connection') ?? parent::getConnectionName();
-    }
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'started_at'  => 'datetime',
-            'finished_at' => 'datetime',
-            'job_tags'    => 'array',
-            'payload'     => 'array',
-            'status'      => JobStatus::class,
-            // Telemetry numeric casts
-            'duration_ms' => 'integer',
-            'memory_start_bytes' => 'integer',
-            'memory_end_bytes' => 'integer',
-            'memory_peak_start_bytes' => 'integer',
-            'memory_peak_end_bytes' => 'integer',
-            'memory_peak_delta_bytes' => 'integer',
-            'cpu_user_ms' => 'integer',
-            'cpu_sys_ms' => 'integer',
-        ];
     }
 
     /**
