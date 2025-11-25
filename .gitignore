@@ -67,9 +67,6 @@ yarn-error.log*
 *.swp
 *~
 
-# Composer
-/composer.lock
-
 # Local docs (keep these out)
 # RELEASE.md - internal release guide
 # TODO.md - internal notes
