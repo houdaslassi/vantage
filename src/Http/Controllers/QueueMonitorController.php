@@ -2,6 +2,8 @@
 
 namespace HoudaSlassi\Vantage\Http\Controllers;
 
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\QueueDepthChecker;
@@ -9,7 +11,6 @@ use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class QueueMonitorController extends Controller
@@ -17,55 +18,48 @@ class QueueMonitorController extends Controller
     /**
      * Dashboard - Overview of all jobs
      */
-    public function index(Request $request)
+    public function index(Request $request): Factory|View
     {
-        $period = $request->get('period', '30d'); // Changed default to 30 days
+        $period = $request->get('period', '30d');
         $since = $this->getSinceDate($period);
 
-        // Overall statistics
         $stats = [
             'total' => VantageJob::where('created_at', '>', $since)->count(),
             'processed' => VantageJob::where('created_at', '>', $since)->where('status', JobStatus::Processed)->count(),
             'failed' => VantageJob::where('created_at', '>', $since)->where('status', JobStatus::Failed)->count(),
             'processing' => VantageJob::where('status', JobStatus::Processing)
-                ->where('created_at', '>', now()->subHour()) // Only recent processing jobs
+                ->where('created_at', '>', now()->subHour())
                 ->count(),
             'avg_duration' => VantageJob::where('created_at', '>', $since)
                 ->whereNotNull('duration_ms')
                 ->avg('duration_ms'),
         ];
 
-        // Calculate success rate based on completed jobs only (processed + failed)
         $completedJobs = $stats['processed'] + $stats['failed'];
         $stats['success_rate'] = $completedJobs > 0
             ? round(($stats['processed'] / $completedJobs) * 100, 1)
             : 0;
 
-        // Recent jobs - exclude large payload and stack columns
         $recentJobs = VantageJob::select([
-                'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
+                'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
                 'status', 'started_at', 'finished_at', 'duration_ms',
                 'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
                 'created_at', 'updated_at'
-                // Exclude: payload, stack (large text fields)
             ])
             ->latest('id')
             ->limit(20)
             ->get();
 
-        // Jobs by status (for chart)
         $jobsByStatus = VantageJob::select('status', DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->groupBy('status')
             ->get()
-            ->mapWithKeys(fn($item) => [$item->status->value => $item->count]);
+            ->mapWithKeys(fn($item): array => [$item->status->value => $item->count]);
 
-        // Jobs by hour (for trend chart)
-        // Use database-agnostic date formatting
         $connectionName = (new VantageJob)->getConnectionName();
         $connection = DB::connection($connectionName);
         $driver = $connection->getDriverName();
-        
+
         if ($driver === 'mysql') {
             $dateFormat = DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour');
         } elseif ($driver === 'sqlite') {
@@ -73,10 +67,9 @@ class QueueMonitorController extends Controller
         } elseif ($driver === 'pgsql') {
             $dateFormat = DB::raw("to_char(created_at, 'YYYY-MM-DD HH24:00:00') as hour");
         } else {
-            // Fallback for other databases
             $dateFormat = DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour');
         }
-        
+
         $failedValue = JobStatus::Failed->value;
         $jobsByHour = VantageJob::select(
                 $dateFormat,
@@ -88,7 +81,6 @@ class QueueMonitorController extends Controller
             ->orderBy('hour')
             ->get();
 
-        // Top failing jobs
         $topFailingJobs = VantageJob::select('job_class', DB::raw('count(*) as failure_count'))
             ->where('created_at', '>', $since)
             ->where('status', JobStatus::Failed)
@@ -97,7 +89,6 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        // Top exceptions
         $topExceptions = VantageJob::select('exception_class', DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->whereNotNull('exception_class')
@@ -106,7 +97,6 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        // Slowest jobs
         $slowestJobs = VantageJob::select('job_class', DB::raw('AVG(duration_ms) as avg_duration'), DB::raw('MAX(duration_ms) as max_duration'), DB::raw('count(*) as count'))
             ->where('created_at', '>', $since)
             ->whereNotNull('duration_ms')
@@ -115,30 +105,23 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        // Top tags - only select needed columns
         $topTags = VantageJob::select(['job_tags', 'status', 'job_class'])
             ->where('created_at', '>', $since)
             ->whereNotNull('job_tags')
             ->get()
-            ->flatMap(function ($job) {
-                return collect($job->job_tags)->map(function ($tag) use ($job) {
-                    return [
-                        'tag' => $tag,
-                        'status' => $job->status,
-                        'job_class' => $job->job_class,
-                    ];
-                });
-            })
+            ->flatMap(fn($job) => collect($job->job_tags)->map(fn($tag): array => [
+                'tag' => $tag,
+                'status' => $job->status,
+                'job_class' => $job->job_class,
+            ]))
             ->groupBy('tag')
-            ->map(function ($jobs, $tag) {
-                return [
-                    'tag' => $tag,
-                    'total' => $jobs->count(),
-                    'failed' => $jobs->where('status', JobStatus::Failed)->count(),
-                    'processed' => $jobs->where('status', JobStatus::Processed)->count(),
-                    'processing' => $jobs->where('status', JobStatus::Processing)->count(),
-                ];
-            })
+            ->map(fn($jobs, $tag): array => [
+                'tag' => $tag,
+                'total' => $jobs->count(),
+                'failed' => $jobs->where('status', JobStatus::Failed)->count(),
+                'processed' => $jobs->where('status', JobStatus::Processed)->count(),
+                'processing' => $jobs->where('status', JobStatus::Processing)->count(),
+            ])
             ->sortByDesc('total')
             ->take(10)
             ->values();
@@ -155,8 +138,8 @@ class QueueMonitorController extends Controller
         // Queue depths (real-time)
         try {
             $queueDepths = QueueDepthChecker::getQueueDepthWithMetadataAlways();
-        } catch (\Throwable $e) {
-            VantageLogger::warning('Failed to get queue depths', ['error' => $e->getMessage()]);
+        } catch (\Throwable $throwable) {
+            VantageLogger::warning('Failed to get queue depths', ['error' => $throwable->getMessage()]);
             // Always show at least one queue entry even on error
             $queueDepths = [
                 'default' => [
@@ -195,6 +178,7 @@ class QueueMonitorController extends Controller
         if ($performanceStats['avg_cpu_user_ms'] !== null || $performanceStats['avg_cpu_sys_ms'] !== null) {
             $avgCpuTotal = ($performanceStats['avg_cpu_user_ms'] ?? 0) + ($performanceStats['avg_cpu_sys_ms'] ?? 0);
         }
+
         $performanceStats['avg_cpu_total_ms'] = $avgCpuTotal;
 
         // Top memory-consuming jobs
@@ -215,7 +199,7 @@ class QueueMonitorController extends Controller
                 DB::raw('count(*) as count')
             )
             ->where('created_at', '>', $since)
-            ->where(function($query) {
+            ->where(function($query): void {
                 $query->whereNotNull('cpu_user_ms')
                       ->orWhereNotNull('cpu_sys_ms');
             })
@@ -224,28 +208,13 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        return view('vantage::dashboard', compact(
-            'stats',
-            'recentJobs',
-            'jobsByStatus',
-            'jobsByHour',
-            'topFailingJobs',
-            'topExceptions',
-            'slowestJobs',
-            'topTags',
-            'recentBatches',
-            'queueDepths',
-            'period',
-            'performanceStats',
-            'topMemoryJobs',
-            'topCpuJobs'
-        ));
+        return view('vantage::dashboard', ['stats' => $stats, 'recentJobs' => $recentJobs, 'jobsByStatus' => $jobsByStatus, 'jobsByHour' => $jobsByHour, 'topFailingJobs' => $topFailingJobs, 'topExceptions' => $topExceptions, 'slowestJobs' => $slowestJobs, 'topTags' => $topTags, 'recentBatches' => $recentBatches, 'queueDepths' => $queueDepths, 'period' => $period, 'performanceStats' => $performanceStats, 'topMemoryJobs' => $topMemoryJobs, 'topCpuJobs' => $topCpuJobs]);
     }
 
     /**
      * Jobs list with filtering
      */
-    public function jobs(Request $request)
+    public function jobs(Request $request): Factory|View
     {
         // Exclude large columns (payload, stack) from jobs list to improve performance
         $query = VantageJob::select([
@@ -277,13 +246,13 @@ class QueueMonitorController extends Controller
         $tagsParam = $request->get('tags');
         
         // Check if tags parameter exists and is not empty
-        if (!empty($tagsParam) && trim($tagsParam) !== '') {
-            $tags = is_array($tagsParam) ? $tagsParam : explode(',', $tagsParam);
-            $tags = array_map('trim', $tags);
-            $tags = array_map('strtolower', $tags);
+        if (!empty($tagsParam) && trim((string) $tagsParam) !== '') {
+            $tags = is_array($tagsParam) ? $tagsParam : explode(',', (string) $tagsParam);
+            $tags = array_map(trim(...), $tags);
+            $tags = array_map(strtolower(...), $tags);
             $tags = array_filter($tags); // Remove empty tags
 
-            if (!empty($tags)) {
+            if ($tags !== []) {
                 // Get database driver for database-specific JSON queries
                 $connectionName = (new VantageJob)->getConnectionName();
                 $connection = DB::connection($connectionName);
@@ -291,7 +260,7 @@ class QueueMonitorController extends Controller
 
                 if ($request->filled('tag_mode') && $request->tag_mode === 'any') {
                     // Jobs that have ANY of the specified tags
-                    $query->where(function($q) use ($tags, $driver) {
+                    $query->where(function($q) use ($tags, $driver): void {
                         foreach ($tags as $tag) {
                             if ($driver === 'sqlite') {
                                 // SQLite: json_each().value returns the actual string, not JSON-encoded
@@ -360,40 +329,34 @@ class QueueMonitorController extends Controller
             ->sort()
             ->values();
         
-        $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn($c) => class_basename($c))->filter();
+        $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn($c): string => class_basename($c))->filter();
 
         // Get all available tags with counts - only select needed columns
         $allTags = VantageJob::select(['job_tags', 'status'])
             ->whereNotNull('job_tags')
             ->get()
-            ->flatMap(function ($job) {
-                return collect($job->job_tags)->map(function ($tag) use ($job) {
-                    return [
-                        'tag' => $tag,
-                        'status' => $job->status,
-                    ];
-                });
-            })
+            ->flatMap(fn($job) => collect($job->job_tags)->map(fn($tag): array => [
+                'tag' => $tag,
+                'status' => $job->status,
+            ]))
             ->groupBy('tag')
-            ->map(function ($jobs, $tag) {
-                return [
-                    'tag' => $tag,
-                    'total' => $jobs->count(),
-                    'processed' => $jobs->where('status', JobStatus::Processed)->count(),
-                    'failed' => $jobs->where('status', JobStatus::Failed)->count(),
-                    'processing' => $jobs->where('status', JobStatus::Processing)->count(),
-                ];
-            })
+            ->map(fn($jobs, $tag): array => [
+                'tag' => $tag,
+                'total' => $jobs->count(),
+                'processed' => $jobs->where('status', JobStatus::Processed)->count(),
+                'failed' => $jobs->where('status', JobStatus::Failed)->count(),
+                'processing' => $jobs->where('status', JobStatus::Processing)->count(),
+            ])
             ->sortByDesc('total')
             ->take(50); // Limit to top 50 tags
 
-        return view('vantage::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
+        return view('vantage::jobs', ['jobs' => $jobs, 'queues' => $queues, 'jobClasses' => $jobClasses, 'allTags' => $allTags]);
     }
 
     /**
      * Job details
      */
-    public function show($id)
+    public function show($id): Factory|View
     {
         $job = VantageJob::findOrFail($id);
 
@@ -403,13 +366,13 @@ class QueueMonitorController extends Controller
             $retryChain = $this->getRetryChain($job);
         }
 
-        return view('vantage::show', compact('job', 'retryChain'));
+        return view('vantage::show', ['job' => $job, 'retryChain' => $retryChain]);
     }
 
     /**
      * Tags statistics
      */
-    public function tags(Request $request)
+    public function tags(Request $request): Factory|View
     {
         $period = $request->get('period', '7d');
         $since = $this->getSinceDate($period);
@@ -444,28 +407,28 @@ class QueueMonitorController extends Controller
         }
 
         // Calculate averages and success rates
-        foreach ($tagStats as $tag => &$stats) {
-            $stats['avg_duration'] = !empty($stats['durations'])
-                ? round(array_sum($stats['durations']) / count($stats['durations']), 2)
+        foreach ($tagStats as &$tagStat) {
+            $tagStat['avg_duration'] = empty($tagStat['durations'])
+                ? 0
+                : round(array_sum($tagStat['durations']) / count($tagStat['durations']), 2);
+
+            $tagStat['success_rate'] = $tagStat['total'] > 0
+                ? round(($tagStat['processed'] / $tagStat['total']) * 100, 1)
                 : 0;
 
-            $stats['success_rate'] = $stats['total'] > 0
-                ? round(($stats['processed'] / $stats['total']) * 100, 1)
-                : 0;
-
-            unset($stats['durations']);
+            unset($tagStat['durations']);
         }
 
         // Sort by total count
-        uasort($tagStats, fn($a, $b) => $b['total'] <=> $a['total']);
+        uasort($tagStats, fn($a, $b): int => $b['total'] <=> $a['total']);
 
-        return view('vantage::tags', compact('tagStats', 'period'));
+        return view('vantage::tags', ['tagStats' => $tagStats, 'period' => $period]);
     }
 
     /**
      * Failed jobs
      */
-    public function failed(Request $request)
+    public function failed(Request $request): Factory|View
     {
         // Exclude large columns (payload) from failed jobs list
         // Keep stack for debugging, but exclude payload
@@ -480,7 +443,7 @@ class QueueMonitorController extends Controller
             ->latest('id')
             ->paginate(50);
 
-        return view('vantage::failed', compact('jobs'));
+        return view('vantage::failed', ['jobs' => $jobs]);
     }
 
     /**
@@ -504,7 +467,7 @@ class QueueMonitorController extends Controller
             // Simple: Just unserialize the original job from Laravel's payload
             $job = $this->restoreJobFromPayload($run);
 
-            if (!$job) {
+            if ($job === null) {
                 return back()->with('error', 'Unable to restore job. Payload might be missing or corrupted.');
             }
 
@@ -518,13 +481,13 @@ class QueueMonitorController extends Controller
 
         return back()->with('success', 'Job queued for retry!');
 
-        } catch (\Throwable $e) {
+        } catch (\Throwable $throwable) {
                 VantageLogger::error('Vantage: Retry failed', [
                 'job_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $throwable->getMessage()
             ]);
 
-            return back()->with('error', "Retry failed: " . $e->getMessage());
+            return back()->with('error', "Retry failed: " . $throwable->getMessage());
         }
     }
 
@@ -532,20 +495,20 @@ class QueueMonitorController extends Controller
      * Restore job from the original Laravel serialized payload
      * This is the simplest and most accurate method
      */
-    protected function restoreJobFromPayload(VantageJob $run): ?object
+    protected function restoreJobFromPayload(VantageJob $vantageJob): ?object
     {
-        if (!$run->payload) {
+        if (!$vantageJob->payload) {
             return null;
         }
 
         try {
-            $payload = json_decode($run->payload, true);
+            $payload = json_decode($vantageJob->payload, true);
 
             // Get the serialized command from Laravel's raw payload
             $serialized = $payload['raw_payload']['data']['command'] ?? null;
 
             if (!$serialized) {
-                VantageLogger::warning('Vantage: No serialized command in payload', ['run_id' => $run->id]);
+                VantageLogger::warning('Vantage: No serialized command in payload', ['run_id' => $vantageJob->id]);
                 return null;
             }
 
@@ -554,20 +517,20 @@ class QueueMonitorController extends Controller
 
             if (!is_object($job)) {
                 VantageLogger::warning('Vantage: Unserialize did not return object', [
-                    'run_id' => $run->id,
+                    'run_id' => $vantageJob->id,
                     'result_type' => gettype($job)
                 ]);
                 return null;
             }
 
             VantageLogger::info('Vantage: Successfully restored job', [
-                'run_id' => $run->id,
-                'job_class' => get_class($job)
+                'run_id' => $vantageJob->id,
+                'job_class' => $job::class
             ]);
 
             return $job;
 
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return null;
         }
     }
@@ -575,7 +538,7 @@ class QueueMonitorController extends Controller
     /**
      * Get retry chain
      */
-    protected function getRetryChain($job)
+    protected function getRetryChain($job): array
     {
         $chain = [];
         $current = $job->retriedFrom;

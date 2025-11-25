@@ -50,8 +50,8 @@ class GenerateTestJobs extends Command
         $this->info("   Tags: " . implode(', ', $tags));
         $this->newLine();
 
-        $bar = $this->output->createProgressBar($count);
-        $bar->start();
+        $progressBar = $this->output->createProgressBar($count);
+        $progressBar->start();
 
         $dispatched = 0;
         $batches = ceil($count / $batchSize);
@@ -73,9 +73,9 @@ class GenerateTestJobs extends Command
             }
 
             // Dispatch batch
-            foreach ($batchJobs as $job) {
-                dispatch($job)->onQueue($queue);
-                $bar->advance();
+            foreach ($batchJobs as $batchJob) {
+                dispatch($batchJob)->onQueue($queue);
+                $progressBar->advance();
                 $dispatched++;
             }
 
@@ -85,7 +85,7 @@ class GenerateTestJobs extends Command
             }
         }
 
-        $bar->finish();
+        $progressBar->finish();
         $this->newLine(2);
 
         $this->info("[OK] Dispatched {$dispatched} jobs to queue '{$queue}'");
@@ -104,8 +104,10 @@ class GenerateTestJobs extends Command
  */
 class TestLoadJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
     public function __construct(
         public bool $shouldFail = false,
         public int $durationMs = 100,

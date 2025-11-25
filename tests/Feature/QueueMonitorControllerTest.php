@@ -3,11 +3,11 @@
 use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Support\Str;
 
-beforeEach(function () {
+beforeEach(function (): void {
     VantageJob::query()->delete();
 });
 
-it('displays dashboard with job statistics', function () {
+it('displays dashboard with job statistics', function (): void {
     // Create test jobs
     VantageJob::create([
         'uuid' => Str::uuid(),
@@ -30,7 +30,7 @@ it('displays dashboard with job statistics', function () {
         ->assertSee('TestJob', false);
 });
 
-it('displays jobs list with filtering', function () {
+it('displays jobs list with filtering', function (): void {
     VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -59,7 +59,7 @@ it('displays jobs list with filtering', function () {
         ->assertDontSee('TestJob', false);
 });
 
-it('displays individual job details', function () {
+it('displays individual job details', function (): void {
     $job = VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -79,7 +79,7 @@ it('displays individual job details', function () {
         ->assertSee('1.5s', false);
 });
 
-it('displays retry chain in job details', function () {
+it('displays retry chain in job details', function (): void {
     $original = VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -99,7 +99,7 @@ it('displays retry chain in job details', function () {
         ->assertSee('Retry Chain', false);
 });
 
-it('filters jobs by tags', function () {
+it('filters jobs by tags', function (): void {
     VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -121,7 +121,7 @@ it('filters jobs by tags', function () {
         ->assertDontSee('OtherJob', false);
 });
 
-it('displays failed jobs page', function () {
+it('displays failed jobs page', function (): void {
     VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',

@@ -12,8 +12,12 @@ namespace HoudaSlassi\Vantage\Support;
 class JobPerformanceContext
 {
     protected static array $baselines = [];
-    protected static int $maxAge = 3600; // 1 hour TTL
+
+    protected static int $maxAge = 3600;
+
+     // 1 hour TTL
     protected static int $lastCleanup = 0;
+
     protected static int $cleanupInterval = 300; // Cleanup every 5 minutes
 
     public static function setBaseline(string $uuid, array $data): void
@@ -66,7 +70,7 @@ class JobPerformanceContext
 
         self::$baselines = array_filter(
             self::$baselines,
-            fn($entry) => $entry['timestamp'] > $cutoff
+            fn(array $entry): bool => $entry['timestamp'] > $cutoff
         );
 
         $afterCount = count(self::$baselines);
@@ -99,9 +103,9 @@ class JobPerformanceContext
         return [
             'count' => count(self::$baselines),
             'memory_bytes' => strlen(serialize(self::$baselines)),
-            'oldest_timestamp' => !empty(self::$baselines)
-                ? min(array_column(self::$baselines, 'timestamp'))
-                : null,
+            'oldest_timestamp' => self::$baselines === []
+                ? null
+                : min(array_column(self::$baselines, 'timestamp')),
         ];
     }
 }

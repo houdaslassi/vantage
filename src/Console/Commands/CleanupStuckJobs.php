@@ -35,7 +35,7 @@ class CleanupStuckJobs extends Command
         if ($dryRun) {
             $this->table(
                 ['ID', 'Job Class', 'Started At', 'Age'],
-                $stuckJobs->map(fn($job) => [
+                $stuckJobs->map(fn($job): array => [
                     $job->id,
                     class_basename($job->job_class),
                     $job->started_at->format('Y-m-d H:i:s'),
@@ -48,8 +48,8 @@ class CleanupStuckJobs extends Command
         }
         
         // Mark as failed with timeout
-        foreach ($stuckJobs as $job) {
-            $job->update([
+        foreach ($stuckJobs as $stuckJob) {
+            $stuckJob->update([
                 'status' => 'failed',
                 'finished_at' => now(),
                 'exception_class' => 'TimeoutException',

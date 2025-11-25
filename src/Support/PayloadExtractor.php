@@ -61,7 +61,7 @@ class PayloadExtractor
             $command = self::getCommand($event);
             $commandData = [];
 
-            if ($command) {
+            if ($command !== null) {
                 $commandData = self::extractData($command);
             }
 
@@ -84,7 +84,7 @@ class PayloadExtractor
             // Debug: Log what we're extracting
             if (config('app.debug', false)) {
                 VantageLogger::info('PayloadExtractor: Complete payload extracted', [
-                    'command_class' => $command ? get_class($command) : null,
+                    'command_class' => $command ? $command::class : null,
                     'raw_payload_keys' => array_keys($rawPayload),
                     'command_data_keys' => array_keys($commandData),
                     'payload_size' => strlen(json_encode($fullData)),
@@ -92,10 +92,10 @@ class PayloadExtractor
             }
 
             return json_encode($fullData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $throwable) {
             VantageLogger::error('PayloadExtractor: Failed to extract payload', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $throwable->getMessage(),
+                'trace' => $throwable->getTraceAsString()
             ]);
             return null;
         }
@@ -122,15 +122,15 @@ class PayloadExtractor
             } catch (\Throwable $e) {
                 VantageLogger::warning('PayloadExtractor: Unserialization failed', [
                     'error' => $e->getMessage(),
-                    'event' => get_class($event),
+                    'event' => $event::class,
                 ]);
                 return null;
             }
 
             return is_object($command) ? $command : null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $throwable) {
             VantageLogger::error('PayloadExtractor: Failed to get command', [
-                'error' => $e->getMessage(),
+                'error' => $throwable->getMessage(),
             ]);
             return null;
         }
@@ -145,7 +145,7 @@ class PayloadExtractor
      * Note: PHP's unserialize() doesn't support wildcards, so patterns are not supported.
      * Either provide specific class names or use default (allow all trusted job classes).
      */
-    protected static function getAllowedClasses()
+    protected static function getAllowedClasses(): bool|array
     {
         $configClasses = config('vantage.allowed_job_classes');
 
@@ -156,7 +156,7 @@ class PayloadExtractor
         }
 
         // If user explicitly set to empty array, don't allow any classes
-        if (is_array($configClasses) && empty($configClasses)) {
+        if ($configClasses === []) {
             VantageLogger::warning('PayloadExtractor: No classes allowed for unserialization - payload extraction disabled');
             return false;
         }
@@ -181,16 +181,15 @@ class PayloadExtractor
         $data = [];
 
         try {
-            $reflection = new \ReflectionClass($command);
+            $reflectionClass = new \ReflectionClass($command);
 
             // Get ALL properties (public, protected, private) - NO FILTERING!
-            foreach ($reflection->getProperties() as $property) {
-                $property->setAccessible(true);
-                $key = $property->getName();
-                $value = $property->getValue($command);
+            foreach ($reflectionClass->getProperties() as $reflectionProperty) {
+                $key = $reflectionProperty->getName();
+                $value = $reflectionProperty->getValue($command);
                 $data[$key] = self::convertValue($value);
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             // If reflection fails, fallback to public properties only
             foreach (get_object_vars($command) as $key => $value) {
                 $data[$key] = self::convertValue($value);
@@ -214,13 +213,13 @@ class PayloadExtractor
 
         // Arrays
         if (is_array($value)) {
-            return array_map(fn($item) => self::convertValue($item), $value);
+            return array_map(self::convertValue(...), $value);
         }
 
         // Eloquent models
         if (is_object($value) && method_exists($value, 'getKey') && method_exists($value, 'getTable')) {
             $modelData = [
-                'model' => get_class($value),
+                'model' => $value::class,
                 'id' => $value->getKey(),
             ];
 
@@ -229,12 +228,12 @@ class PayloadExtractor
                 $attributes = $value->getAttributes();
                 // Only include a few key attributes to avoid huge payloads
                 $keyAttributes = ['name', 'email', 'title', 'slug'];
-                foreach ($keyAttributes as $attr) {
-                    if (isset($attributes[$attr])) {
-                        $modelData[$attr] = $attributes[$attr];
+                foreach ($keyAttributes as $keyAttribute) {
+                    if (isset($attributes[$keyAttribute])) {
+                        $modelData[$keyAttribute] = $attributes[$keyAttribute];
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (\Throwable) {
                 // Ignore attribute access errors
             }
 
@@ -245,15 +244,15 @@ class PayloadExtractor
         if (is_object($value) && method_exists($value, 'toArray')) {
             try {
                 return self::convertValue($value->toArray());
-            } catch (\Throwable $e) {
-                return ['class' => get_class($value), 'type' => 'collection'];
+            } catch (\Throwable) {
+                return ['class' => $value::class, 'type' => 'collection'];
             }
         }
 
         // DateTime objects
         if ($value instanceof \DateTimeInterface) {
             return [
-                'class' => get_class($value),
+                'class' => $value::class,
                 'date' => $value->format('Y-m-d H:i:s'),
                 'timezone' => $value->getTimezone()->getName(),
             ];
@@ -261,11 +260,11 @@ class PayloadExtractor
 
         // Other objects - try to get some properties
         if (is_object($value)) {
-            $objectData = ['class' => get_class($value)];
+            $objectData = ['class' => $value::class];
 
             try {
-                $reflection = new \ReflectionClass($value);
-                $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
+                $reflectionClass = new \ReflectionClass($value);
+                $properties = $reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC);
 
                 foreach ($properties as $property) {
                     $propName = $property->getName();
@@ -276,7 +275,7 @@ class PayloadExtractor
                         $objectData[$propName] = $propValue;
                     }
                 }
-            } catch (\Throwable $e) {
+            } catch (\Throwable) {
                 // Ignore reflection errors
             }
 
@@ -299,7 +298,7 @@ class PayloadExtractor
 
         foreach ($data as $key => &$value) {
             // Check if key is sensitive
-            if (in_array(strtolower($key), array_map('strtolower', $sensitiveKeys))) {
+            if (in_array(strtolower((string) $key), array_map(strtolower(...), $sensitiveKeys))) {
                 $data[$key] = '[REDACTED]';
             }
             // Recursively check nested arrays

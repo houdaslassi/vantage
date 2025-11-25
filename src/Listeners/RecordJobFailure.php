@@ -19,37 +19,37 @@ class RecordJobFailure
 {
     use ExtractsRetryOf;
 
-    public function handle(JobFailed $event): void
+    public function handle(JobFailed $jobFailed): void
     {
         // Master switch: if package is disabled, don't track anything
         if (!config('vantage.enabled', true)) {
             return;
         }
 
-        $uuid = $this->bestUuid($event);
+        $uuid = $this->bestUuid($jobFailed);
 
         try {
-            $this->recordJobFailureDetails($event, $uuid);
+            $this->recordJobFailureDetails($jobFailed, $uuid);
         } finally {
             // Always clear baseline to prevent memory leaks, even if an exception occurs
             JobPerformanceContext::clearBaseline($uuid);
         }
     }
 
-    protected function recordJobFailureDetails(JobFailed $event, string $uuid): void
+    protected function recordJobFailureDetails(JobFailed $jobFailed, string $uuid): void
     {
-        $jobClass = $this->jobClass($event);
-        $queue = $event->job->getQueue();
-        $connection = $event->connectionName ?? null;
+        $jobClass = $this->jobClass($jobFailed);
+        $queue = $jobFailed->job->getQueue();
+        $connection = $jobFailed->connectionName ?? null;
 
         // Use transaction for atomic database operations
-        $row = DB::transaction(function () use ($event, $uuid, $jobClass, $queue, $connection) {
+        $row = DB::transaction(function () use ($jobFailed, $uuid, $jobClass, $queue, $connection) {
             // Try to find existing processing record
             $row = null;
 
             // First, try by stable UUID if available (most reliable)
-            $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid())
-                          || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
+            $hasStableUuid = (method_exists($jobFailed->job, 'uuid') && $jobFailed->job->uuid())
+                          || (method_exists($jobFailed->job, 'getJobId') && $jobFailed->job->getJobId());
 
             if ($hasStableUuid) {
                 $row = VantageJob::where('uuid', $uuid)
@@ -85,7 +85,7 @@ class RecordJobFailure
                 if (is_array($ru)) {
                     $userUs = ($ru['ru_utime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_utime.tv_usec'] ?? 0);
                     $sysUs  = ($ru['ru_stime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_stime.tv_usec'] ?? 0);
-                    if ($uuid) {
+                    if ($uuid !== '' && $uuid !== '0') {
                         $baseline = JobPerformanceContext::getBaseline($uuid);
                         if ($baseline) {
                             $cpuDelta['user_ms'] = max(0, (int) round(($userUs - ($baseline['cpu_start_user_us'] ?? 0)) / 1000));
@@ -99,20 +99,22 @@ class RecordJobFailure
         if ($row) {
             // Update existing processing record
             $row->status = JobStatus::Failed;
-            $row->exception_class = get_class($event->exception);
-            $row->exception_message = Str::limit($event->exception->getMessage(), 2000);
-            $row->stack = Str::limit($event->exception->getTraceAsString(), 4000);
+            $row->exception_class = $jobFailed->exception::class;
+            $row->exception_message = Str::limit($jobFailed->exception->getMessage(), 2000);
+            $row->stack = Str::limit($jobFailed->exception->getTraceAsString(), 4000);
             $row->finished_at = now();
             if ($row->started_at) {
                 $duration = $row->finished_at->diffInRealMilliseconds($row->started_at, true);
                 $row->duration_ms = max(0, (int) $duration);
             }
+
             // Telemetry end metrics
             $row->memory_end_bytes = $memoryEnd;
             $row->memory_peak_end_bytes = $memoryPeakEnd;
             if ($row->memory_peak_start_bytes !== null && $memoryPeakEnd !== null) {
                 $row->memory_peak_delta_bytes = max(0, (int) ($memoryPeakEnd - $row->memory_peak_start_bytes));
             }
+
             $row->cpu_user_ms = $cpuDelta['user_ms'];
             $row->cpu_sys_ms = $cpuDelta['sys_ms'];
             $row->save();
@@ -128,15 +130,15 @@ class RecordJobFailure
                 'job_class'        => $jobClass,
                 'queue'            => $queue,
                 'connection'       => $connection,
-                'attempt'          => $event->job->attempts(),
+                'attempt'          => $jobFailed->job->attempts(),
                 'status'           => JobStatus::Failed,
-                'exception_class'  => get_class($event->exception),
-                'exception_message'=> Str::limit($event->exception->getMessage(), 2000),
-                'stack'            => Str::limit($event->exception->getTraceAsString(), 4000),
+                'exception_class'  => $jobFailed->exception::class,
+                'exception_message'=> Str::limit($jobFailed->exception->getMessage(), 2000),
+                'stack'            => Str::limit($jobFailed->exception->getTraceAsString(), 4000),
                 'finished_at'      => now(),
-                'retried_from_id'  => $this->getRetryOf($event),
-                'payload'          => PayloadExtractor::getPayload($event, true), // Force extraction on failure
-                'job_tags'         => TagExtractor::extract($event),
+                'retried_from_id'  => $this->getRetryOf($jobFailed),
+                'payload'          => PayloadExtractor::getPayload($jobFailed, true), // Force extraction on failure
+                'job_tags'         => TagExtractor::extract($jobFailed),
                 // telemetry end metrics
                 'memory_end_bytes' => $memoryEnd,
                 'memory_peak_end_bytes' => $memoryPeakEnd,
@@ -164,16 +166,16 @@ class RecordJobFailure
     /**
      * Get best available UUID for the job
      */
-    protected function bestUuid(JobFailed $event): string
+    protected function bestUuid(JobFailed $jobFailed): string
     {
         // Try Laravel's built-in UUID
-        if (method_exists($event->job, 'uuid') && $event->job->uuid()) {
-            return (string) $event->job->uuid();
+        if (method_exists($jobFailed->job, 'uuid') && $jobFailed->job->uuid()) {
+            return (string) $jobFailed->job->uuid();
         }
 
         // Fallback to job ID
-        if (method_exists($event->job, 'getJobId') && $event->job->getJobId()) {
-            return (string) $event->job->getJobId();
+        if (method_exists($jobFailed->job, 'getJobId') && $jobFailed->job->getJobId()) {
+            return (string) $jobFailed->job->getJobId();
         }
 
         // Last resort: generate new UUID
@@ -183,13 +185,13 @@ class RecordJobFailure
     /**
      * Get job class name
      */
-    protected function jobClass(JobFailed $event): string
+    protected function jobClass(JobFailed $jobFailed): string
     {
-        if (method_exists($event->job, 'resolveName')) {
-            return $event->job->resolveName();
+        if (method_exists($jobFailed->job, 'resolveName')) {
+            return $jobFailed->job->resolveName();
         }
 
-        return get_class($event->job);
+        return $jobFailed->job::class;
     }
 }
 

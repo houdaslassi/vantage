@@ -3,7 +3,7 @@
 use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Support\Facades\Log;
 
-it('logs when enabled', function () {
+it('logs when enabled', function (): void {
     Log::spy();
     config()->set('vantage.logging.enabled', true);
 
@@ -12,7 +12,7 @@ it('logs when enabled', function () {
     Log::shouldHaveReceived('info')->once()->with('testing', ['foo' => 'bar']);
 });
 
-it('does not log when disabled', function () {
+it('does not log when disabled', function (): void {
     Log::spy();
     config()->set('vantage.logging.enabled', false);
 

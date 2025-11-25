@@ -85,7 +85,7 @@ class PruneOldJobs extends Command
         if (!empty($breakdown)) {
             $this->table(
                 ['Status', 'Count'],
-                collect($breakdown)->map(fn($count, $status) => [$status, number_format($count)])
+                collect($breakdown)->map(fn($count, $status): array => [$status, number_format($count)])
             );
         }
 
@@ -107,7 +107,7 @@ class PruneOldJobs extends Command
         $chunkSize = 1000;
 
         // Use chunking for large deletions
-        $query->chunkById($chunkSize, function ($jobs) use (&$deleted) {
+        $query->chunkById($chunkSize, function ($jobs) use (&$deleted): void {
             // Handle retry chain relationships
             // First, nullify retried_from_id for children of jobs we're about to delete
             $parentIds = $jobs->pluck('id')->toArray();

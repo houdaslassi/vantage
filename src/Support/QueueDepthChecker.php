@@ -2,9 +2,9 @@
 
 namespace HoudaSlassi\Vantage\Support;
 
+use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Queue;
 use HoudaSlassi\Vantage\Support\VantageLogger;
 
 class QueueDepthChecker
@@ -31,7 +31,7 @@ class QueueDepthChecker
     {
         try {
             $table = config("queue.connections.{$connection}.table", 'jobs');
-            
+
             $query = DB::table($table)
                 ->whereNull('reserved_at')
                 ->where('attempts', 0);
@@ -39,43 +39,42 @@ class QueueDepthChecker
             if ($queueName) {
                 $count = $query->where('queue', $queueName)->count();
                 return [$queueName ?: 'default' => $count];
-            } else {
-                // Get depths for all queues
-                $queues = DB::table($table)
+            }
+
+            // Get depths for all queues
+            $queues = DB::table($table)
+                ->whereNull('reserved_at')
+                ->where('attempts', 0)
+                ->distinct()
+                ->pluck('queue')
+                ->filter();
+            $depths = [];
+            foreach ($queues as $queue) {
+                $count = DB::table($table)
+                    ->where('queue', $queue)
                     ->whereNull('reserved_at')
                     ->where('attempts', 0)
-                    ->distinct()
-                    ->pluck('queue')
-                    ->filter();
+                    ->count();
 
-                $depths = [];
-                foreach ($queues as $queue) {
-                    $count = DB::table($table)
-                        ->where('queue', $queue)
-                        ->whereNull('reserved_at')
-                        ->where('attempts', 0)
-                        ->count();
-                    
-                    $depths[$queue ?: 'default'] = $count;
-                }
-
-                // If no jobs found, still check default queue
-                if (empty($depths)) {
-                    $defaultCount = DB::table($table)
-                        ->where('queue', 'default')
-                        ->whereNull('reserved_at')
-                        ->where('attempts', 0)
-                        ->count();
-                    if ($defaultCount > 0) {
-                        $depths['default'] = $defaultCount;
-                    }
-                }
-
-                return $depths;
+                $depths[$queue ?: 'default'] = $count;
             }
-        } catch (\Throwable $e) {
+
+            // If no jobs found, still check default queue
+            if ($depths === []) {
+                $defaultCount = DB::table($table)
+                    ->where('queue', 'default')
+                    ->whereNull('reserved_at')
+                    ->where('attempts', 0)
+                    ->count();
+                if ($defaultCount > 0) {
+                    $depths['default'] = $defaultCount;
+                }
+            }
+
+            return $depths;
+        } catch (\Throwable $throwable) {
             VantageLogger::warning('Failed to get database queue depth', [
-                'error' => $e->getMessage(),
+                'error' => $throwable->getMessage(),
                 'queue' => $queueName,
             ]);
             return [];
@@ -119,7 +118,7 @@ class QueueDepthChecker
             }
 
             // If no queues found but we have a default queue, check it
-            if (empty($queues)) {
+            if ($queues === []) {
                 $defaultKey = "{$prefix}queues:default";
                 $count = $redis->llen($defaultKey);
                 if ($count > 0) {
@@ -128,9 +127,9 @@ class QueueDepthChecker
             }
 
             return $queues;
-        } catch (\Throwable $e) {
+        } catch (\Throwable $throwable) {
             VantageLogger::warning('Failed to get Redis queue depth', [
-                'error' => $e->getMessage(),
+                'error' => $throwable->getMessage(),
                 'queue' => $queueName,
             ]);
             return [];
@@ -150,7 +149,7 @@ class QueueDepthChecker
         // For unsupported drivers, we can still show what we know from job_runs
         // Count jobs that are processing or recently started (might be queued)
         try {
-            $query = \HoudaSlassi\Vantage\Models\VantageJob::where('status', 'processing');
+            $query = VantageJob::where('status', 'processing');
             
             if ($queueName) {
                 $query->where('queue', $queueName);
@@ -158,7 +157,7 @@ class QueueDepthChecker
 
             $count = $query->count();
             return [$queueName ?: 'default' => $count];
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return [];
         }
     }
@@ -201,13 +200,16 @@ class QueueDepthChecker
     {
         if ($depth === 0) {
             return 'healthy';
-        } elseif ($depth < 100) {
-            return 'normal';
-        } elseif ($depth < 1000) {
-            return 'warning';
-        } else {
-            return 'critical';
         }
+
+        if ($depth < 100) {
+            return 'normal';
+        }
+
+        if ($depth < 1000) {
+            return 'warning';
+        }
+        return 'critical';
     }
 
     /**
@@ -219,7 +221,7 @@ class QueueDepthChecker
         $depths = self::getQueueDepthWithMetadata($queueName);
         
         // If empty, show at least the default queue with 0 depth
-        if (empty($depths)) {
+        if ($depths === []) {
             $connection = config('queue.default');
             $driver = config("queue.connections.{$connection}.driver", 'sync');
             

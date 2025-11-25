@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Listeners;
 
+use Illuminate\Support\Str;
 use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use HoudaSlassi\Vantage\Support\TagExtractor;
@@ -15,14 +16,14 @@ class RecordJobStart
 {
     use ExtractsRetryOf;
 
-    public function handle(JobProcessing $event): void
+    public function handle(JobProcessing $jobProcessing): void
     {
         // Master switch: if package is disabled, don't track anything
         if (!config('vantage.enabled', true)) {
             return;
         }
 
-        $uuid = $this->bestUuid($event);
+        $uuid = $this->bestUuid($jobProcessing);
 
         // Telemetry config & sampling
         $telemetryEnabled = config('vantage.telemetry.enabled', true);
@@ -56,11 +57,11 @@ class RecordJobStart
         }
 
         // Use transaction to ensure atomic operations
-        DB::transaction(function () use ($event, $uuid, $memoryStart, $memoryPeakStart) {
-            $payloadJson = PayloadExtractor::getPayload($event);
-            $jobClass = $this->jobClass($event);
-            $queue = $event->job->getQueue();
-            $connection = $event->connectionName ?? null;
+        DB::transaction(function () use ($jobProcessing, $uuid, $memoryStart, $memoryPeakStart): void {
+            $payloadJson = PayloadExtractor::getPayload($jobProcessing);
+            $jobClass = $this->jobClass($jobProcessing);
+            $queue = $jobProcessing->job->getQueue();
+            $connection = $jobProcessing->connectionName ?? null;
 
             // Always create a new record on job start
             // The UUID will be used by Success/Failure listeners to find and update this record
@@ -69,12 +70,12 @@ class RecordJobStart
                 'job_class'        => $jobClass,
                 'queue'            => $queue,
                 'connection'       => $connection,
-                'attempt'          => $event->job->attempts(),
+                'attempt'          => $jobProcessing->job->attempts(),
                 'status'           => JobStatus::Processing,
                 'started_at'       => now(),
-                'retried_from_id'  => $this->getRetryOf($event),
+                'retried_from_id'  => $this->getRetryOf($jobProcessing),
                 'payload'          => $payloadJson,
-                'job_tags'         => TagExtractor::extract($event),
+                'job_tags'         => TagExtractor::extract($jobProcessing),
                 // telemetry columns (nullable if disabled/unsampled)
                 'memory_start_bytes' => $memoryStart,
                 'memory_peak_start_bytes' => $memoryPeakStart,
@@ -85,32 +86,32 @@ class RecordJobStart
     /**
      * Get best available UUID for the job
      */
-    protected function bestUuid(JobProcessing $event): string
+    protected function bestUuid(JobProcessing $jobProcessing): string
     {
         // Try Laravel's built-in UUID
-        if (method_exists($event->job, 'uuid') && $event->job->uuid()) {
-            return (string) $event->job->uuid();
+        if (method_exists($jobProcessing->job, 'uuid') && $jobProcessing->job->uuid()) {
+            return (string) $jobProcessing->job->uuid();
         }
 
         // Fallback to job ID
-        if (method_exists($event->job, 'getJobId') && $event->job->getJobId()) {
-            return (string) $event->job->getJobId();
+        if (method_exists($jobProcessing->job, 'getJobId') && $jobProcessing->job->getJobId()) {
+            return (string) $jobProcessing->job->getJobId();
         }
 
         // Last resort: generate new UUID
-        return (string) \Illuminate\Support\Str::uuid();
+        return (string) Str::uuid();
     }
 
     /**
      * Get job class name
      */
-    protected function jobClass(JobProcessing $event): string
+    protected function jobClass(JobProcessing $jobProcessing): string
     {
-        if (method_exists($event->job, 'resolveName')) {
-            return $event->job->resolveName();
+        if (method_exists($jobProcessing->job, 'resolveName')) {
+            return $jobProcessing->job->resolveName();
         }
 
-        return get_class($event->job);
+        return $jobProcessing->job::class;
     }
 }
 

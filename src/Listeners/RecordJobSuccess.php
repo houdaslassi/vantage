@@ -9,7 +9,6 @@ use HoudaSlassi\Vantage\Support\PayloadExtractor;
 use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 use Illuminate\Queue\Events\JobProcessed;
 use HoudaSlassi\Vantage\Models\VantageJob;
-use Illuminate\Queue\Events\JobProcessing;
 use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +17,7 @@ class RecordJobSuccess
 {
     use ExtractsRetryOf;
 
-    public function handle(JobProcessed $event): void
+    public function handle(JobProcessed $jobProcessed): void
     {
         // Master switch: if package is disabled, don't track anything
         if (!config('vantage.enabled', true)) {
@@ -27,44 +26,42 @@ class RecordJobSuccess
 
         // Some jobs (like rate-limited ones) are "processed" only to be released immediately.
         // Laravel exposes helpers to detect this so we don't count them as successful runs.
-        if (method_exists($event->job, 'isReleased') && $event->job->isReleased()) {
+        if (method_exists($jobProcessed->job, 'isReleased') && $jobProcessed->job->isReleased()) {
             VantageLogger::debug('Queue Monitor: Job was released, skipping processed record', [
-                'job_class' => $this->jobClass($event),
+                'job_class' => $this->jobClass($jobProcessed),
             ]);
             return;
         }
 
-        if (method_exists($event->job, 'isDeletedOrReleased') && $event->job->isDeletedOrReleased()) {
+        if (method_exists($jobProcessed->job, 'isDeletedOrReleased') && $jobProcessed->job->isDeletedOrReleased()) {
             VantageLogger::debug('Queue Monitor: Job was deleted or released, skipping processed record', [
-                'job_class' => $this->jobClass($event),
+                'job_class' => $this->jobClass($jobProcessed),
             ]);
             return;
         }
 
-        $uuid = $this->bestUuid($event);
+        $uuid = $this->bestUuid($jobProcessed);
 
         try {
-            $this->recordJobCompletion($event, $uuid);
+            $this->recordJobCompletion($jobProcessed, $uuid);
         } finally {
             // Always clear baseline to prevent memory leaks, even if an exception occurs
             JobPerformanceContext::clearBaseline($uuid);
         }
     }
 
-    protected function recordJobCompletion(JobProcessed $event, string $uuid): void
+    protected function recordJobCompletion(JobProcessed $jobProcessed, string $uuid): void
     {
-        $jobClass = $this->jobClass($event);
-        $queue = $event->job->getQueue();
-        $connection = $event->connectionName ?? null;
+        $jobClass = $this->jobClass($jobProcessed);
+        $queue = $jobProcessed->job->getQueue();
+        $connection = $jobProcessed->connectionName ?? null;
 
-        // Use transaction for atomic database operations
-        DB::transaction(function () use ($event, $uuid, $jobClass, $queue, $connection) {
-            // Try to find existing processing record
+        DB::transaction(function () use ($jobProcessed, $uuid, $jobClass, $queue, $connection): void {
             $row = null;
 
-            // First, try by stable UUID if available (most reliable)
-            $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid())
-                          || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
+            // Try by stable UUID if available (most reliable)
+            $hasStableUuid = (method_exists($jobProcessed->job, 'uuid') && $jobProcessed->job->uuid())
+                          || (method_exists($jobProcessed->job, 'getJobId') && $jobProcessed->job->getJobId());
 
             if ($hasStableUuid) {
                 $row = VantageJob::where('uuid', $uuid)
@@ -85,7 +82,6 @@ class RecordJobSuccess
             }
 
         if ($row) {
-            // Capture end metrics
             $telemetryEnabled = config('vantage.telemetry.enabled', true);
             $captureCpu = config('vantage.telemetry.capture_cpu', true);
 
@@ -111,7 +107,6 @@ class RecordJobSuccess
                 }
             }
 
-            // Update existing record
             $row->status = JobStatus::Processed;
             $row->finished_at = now();
             if ($row->started_at) {
@@ -119,14 +114,12 @@ class RecordJobSuccess
                 $row->duration_ms = max(0, (int) $duration);
             }
 
-            // Memory updates
             $row->memory_end_bytes = $memoryEnd;
             $row->memory_peak_end_bytes = $memoryPeakEnd;
             if ($row->memory_peak_start_bytes !== null && $memoryPeakEnd !== null) {
                 $row->memory_peak_delta_bytes = max(0, (int) ($memoryPeakEnd - $row->memory_peak_start_bytes));
             }
 
-            // CPU deltas
             $row->cpu_user_ms = $cpuDelta['user_ms'];
             $row->cpu_sys_ms = $cpuDelta['sys_ms'];
 
@@ -149,40 +142,37 @@ class RecordJobSuccess
                     'job_class' => $jobClass,
                     'queue' => $queue,
                     'connection' => $connection,
-                    'attempt' => $event->job->attempts(),
+                    'attempt' => $jobProcessed->job->attempts(),
                     'status' => JobStatus::Processed,
                     'finished_at' => now(),
-                    'retried_from_id' => $this->getRetryOf($event),
-                    'payload' => PayloadExtractor::getPayload($event),
-                    'job_tags' => TagExtractor::extract($event),
+                    'retried_from_id' => $this->getRetryOf($jobProcessed),
+                    'payload' => PayloadExtractor::getPayload($jobProcessed),
+                    'job_tags' => TagExtractor::extract($jobProcessed),
                 ]);
             }
         });
     }
 
-    protected function bestUuid(JobProcessed $event): string
+    protected function bestUuid(JobProcessed $jobProcessed): string
     {
-        // Try Laravel's built-in UUID
-        if (method_exists($event->job, 'uuid') && $event->job->uuid()) {
-            return (string) $event->job->uuid();
+        if (method_exists($jobProcessed->job, 'uuid') && $jobProcessed->job->uuid()) {
+            return (string) $jobProcessed->job->uuid();
         }
 
-        // Fallback to job ID
-        if (method_exists($event->job, 'getJobId') && $event->job->getJobId()) {
-            return (string) $event->job->getJobId();
+        if (method_exists($jobProcessed->job, 'getJobId') && $jobProcessed->job->getJobId()) {
+            return (string) $jobProcessed->job->getJobId();
         }
 
-        // Last resort: generate new UUID
-        return (string) \Illuminate\Support\Str::uuid();
+        return (string) Str::uuid();
     }
 
 
-    protected function jobClass(JobProcessed $event): string
+    protected function jobClass(JobProcessed $jobProcessed): string
     {
-        if (method_exists($event->job, 'resolveName')) {
-            return $event->job->resolveName();
+        if (method_exists($jobProcessed->job, 'resolveName')) {
+            return $jobProcessed->job->resolveName();
         }
 
-        return get_class($event->job);
+        return $jobProcessed->job::class;
     }
 }

@@ -6,11 +6,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-beforeEach(function () {
+beforeEach(function (): void {
     Schema::dropIfExists('jobs');
 });
 
-it('returns queue depths with metadata for the database driver', function () {
+it('returns queue depths with metadata for the database driver', function (): void {
     config()->set('queue.default', 'database');
     config()->set('queue.connections.database', [
         'driver' => 'database',
@@ -19,14 +19,14 @@ it('returns queue depths with metadata for the database driver', function () {
         'retry_after' => 90,
     ]);
 
-    Schema::create('jobs', function (Blueprint $table) {
-        $table->id();
-        $table->string('queue')->default('default');
-        $table->longText('payload')->nullable();
-        $table->unsignedTinyInteger('attempts')->default(0);
-        $table->unsignedInteger('reserved_at')->nullable();
-        $table->unsignedInteger('available_at')->nullable();
-        $table->unsignedInteger('created_at')->nullable();
+    Schema::create('jobs', function (Blueprint $blueprint): void {
+        $blueprint->id();
+        $blueprint->string('queue')->default('default');
+        $blueprint->longText('payload')->nullable();
+        $blueprint->unsignedTinyInteger('attempts')->default(0);
+        $blueprint->unsignedInteger('reserved_at')->nullable();
+        $blueprint->unsignedInteger('available_at')->nullable();
+        $blueprint->unsignedInteger('created_at')->nullable();
     });
 
     $counts = [
@@ -47,6 +47,7 @@ it('returns queue depths with metadata for the database driver', function () {
                 'created_at' => now()->timestamp,
             ];
         }
+
         DB::table('jobs')->insert($rows);
     }
 
@@ -62,21 +63,21 @@ it('returns queue depths with metadata for the database driver', function () {
     expect(QueueDepthChecker::getTotalQueueDepth())->toBe(array_sum($counts));
 });
 
-it('returns a default queue entry when no jobs are present', function () {
+it('returns a default queue entry when no jobs are present', function (): void {
     config()->set('queue.default', 'database');
     config()->set('queue.connections.database', [
         'driver' => 'database',
         'table' => 'jobs',
     ]);
 
-    Schema::create('jobs', function (Blueprint $table) {
-        $table->id();
-        $table->string('queue')->default('default');
-        $table->longText('payload')->nullable();
-        $table->unsignedTinyInteger('attempts')->default(0);
-        $table->unsignedInteger('reserved_at')->nullable();
-        $table->unsignedInteger('available_at')->nullable();
-        $table->unsignedInteger('created_at')->nullable();
+    Schema::create('jobs', function (Blueprint $blueprint): void {
+        $blueprint->id();
+        $blueprint->string('queue')->default('default');
+        $blueprint->longText('payload')->nullable();
+        $blueprint->unsignedTinyInteger('attempts')->default(0);
+        $blueprint->unsignedInteger('reserved_at')->nullable();
+        $blueprint->unsignedInteger('available_at')->nullable();
+        $blueprint->unsignedInteger('created_at')->nullable();
     });
 
     $depths = QueueDepthChecker::getQueueDepthWithMetadataAlways();
@@ -87,7 +88,7 @@ it('returns a default queue entry when no jobs are present', function () {
         ->and($depths['default']['driver'])->toBe('database');
 });
 
-it('falls back to processing jobs when the driver is unsupported', function () {
+it('falls back to processing jobs when the driver is unsupported', function (): void {
     config()->set('queue.default', 'sync');
     config()->set('queue.connections.sync.driver', 'sync');
 

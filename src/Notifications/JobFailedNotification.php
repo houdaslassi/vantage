@@ -49,7 +49,7 @@ class JobFailedNotification extends Notification implements ShouldQueue
         return (new SlackMessage)
             ->error()
             ->content('A queued job has failed!')
-            ->attachment(function ($attachment) {
+            ->attachment(function ($attachment): void {
                 $attachment->title($this->jobRun->job_class)
                     ->fields([
                         'Queue'      => $this->jobRun->queue,

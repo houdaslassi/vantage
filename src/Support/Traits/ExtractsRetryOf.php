@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Support\Traits;
 
+use Illuminate\Support\Str;
 use HoudaSlassi\Vantage\Support\VantageLogger;
 
 trait ExtractsRetryOf
@@ -25,9 +26,9 @@ trait ExtractsRetryOf
                     $retryOf = (int) $obj->queueMonitorRetryOf;
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (\Throwable $throwable) {
             // Log error if needed, but don't break the application
-            VantageLogger::debug('Error extracting retryOf', ['error' => $e->getMessage()]);
+            VantageLogger::debug('Error extracting retryOf', ['error' => $throwable->getMessage()]);
         }
 
         VantageLogger::debug('QM retryOf check', ['retryOf' => $retryOf]);
@@ -42,7 +43,7 @@ trait ExtractsRetryOf
     {
         return method_exists($event->job, 'resolveName')
             ? $event->job->resolveName()
-            : get_class($event->job);
+            : $event->job::class;
     }
 
     /**
@@ -54,10 +55,12 @@ trait ExtractsRetryOf
         if (method_exists($event->job, 'uuid') && $event->job->uuid()) {
             return (string) $event->job->uuid();
         }
+
         if (method_exists($event->job, 'getJobId') && $event->job->getJobId()) {
             return (string) $event->job->getJobId();
         }
+
         // Otherwise we'll generate a UUID
-        return (string) \Illuminate\Support\Str::uuid();
+        return (string) Str::uuid();
     }
 }

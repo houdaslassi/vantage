@@ -2,15 +2,14 @@
 
 use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Clear baselines before each test
     $reflection = new \ReflectionClass(JobPerformanceContext::class);
-    $property = $reflection->getProperty('baselines');
-    $property->setAccessible(true);
-    $property->setValue(null, []);
+    $reflectionProperty = $reflection->getProperty('baselines');
+    $reflectionProperty->setValue(null, []);
 });
 
-it('stores and retrieves baseline data', function () {
+it('stores and retrieves baseline data', function (): void {
     $uuid = 'test-uuid-123';
     $baseline = [
         'cpu_start_user_us' => 1000000,
@@ -26,13 +25,13 @@ it('stores and retrieves baseline data', function () {
         ->and($retrieved['cpu_start_sys_us'])->toBe(500000);
 });
 
-it('returns null for non-existent baseline', function () {
+it('returns null for non-existent baseline', function (): void {
     $retrieved = JobPerformanceContext::getBaseline('non-existent-uuid');
 
     expect($retrieved)->toBeNull();
 });
 
-it('clears a specific baseline', function () {
+it('clears a specific baseline', function (): void {
     $uuid1 = 'uuid-1';
     $uuid2 = 'uuid-2';
 
@@ -45,7 +44,7 @@ it('clears a specific baseline', function () {
         ->and(JobPerformanceContext::getBaseline($uuid2))->not->toBeNull();
 });
 
-it('handles multiple baselines independently', function () {
+it('handles multiple baselines independently', function (): void {
     $uuid1 = 'uuid-1';
     $uuid2 = 'uuid-2';
 
@@ -59,7 +58,7 @@ it('handles multiple baselines independently', function () {
         ->and(JobPerformanceContext::getBaseline($uuid2))->toBe($baseline2);
 });
 
-it('overwrites existing baseline for same uuid', function () {
+it('overwrites existing baseline for same uuid', function (): void {
     $uuid = 'test-uuid';
 
     JobPerformanceContext::setBaseline($uuid, ['cpu_start_user_us' => 1000]);

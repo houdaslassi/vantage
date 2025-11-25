@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace HoudaSlassi\Vantage\Models;
 
+use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use HoudaSlassi\Vantage\Enums\JobStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,8 +31,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array|null $payload
  * @property array|null $job_tags
  * @property int|null $retried_from_id
- * @property \Illuminate\Support\Carbon|null $started_at
- * @property \Illuminate\Support\Carbon|null $finished_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $finished_at
  * @property int|null $memory_start_bytes
  * @property int|null $memory_end_bytes
  * @property int|null $memory_peak_start_bytes
@@ -38,14 +40,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $memory_peak_delta_bytes
  * @property int|null $cpu_user_ms
  * @property int|null $cpu_sys_ms
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class VantageJob extends Model
 {
     // Byte conversion constants
     private const BYTES_PER_KB = 1024;
+
     private const BYTES_PER_MB = 1024 * 1024;
+
     private const BYTES_PER_GB = 1024 * 1024 * 1024;
 
     // Time conversion constants
@@ -125,7 +129,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by tag
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeWithTag($query, string $tag): void
     {
@@ -135,12 +139,12 @@ class VantageJob extends Model
     /**
      * Scope: Filter by any of multiple tags
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      * @param array<string> $tags
      */
     public function scopeWithAnyTag($query, array $tags): void
     {
-        $query->where(function($q) use ($tags) {
+        $query->where(function($q) use ($tags): void {
             foreach ($tags as $tag) {
                 $q->orWhereJsonContains('job_tags', strtolower($tag));
             }
@@ -150,7 +154,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by all tags (must have all)
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      * @param array<string> $tags
      */
     public function scopeWithAllTags($query, array $tags): void
@@ -163,11 +167,11 @@ class VantageJob extends Model
     /**
      * Scope: Exclude jobs with specific tag
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeWithoutTag($query, string $tag): void
     {
-        $query->where(function($q) use ($tag) {
+        $query->where(function($q) use ($tag): void {
             $q->whereNull('job_tags')
               ->orWhereJsonDoesntContain('job_tags', strtolower($tag));
         });
@@ -176,7 +180,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by job class
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeOfClass($query, string $class): void
     {
@@ -186,7 +190,7 @@ class VantageJob extends Model
     /**
      * Scope: Filter by status
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeWithStatus($query, JobStatus|string $status): void
     {
@@ -197,7 +201,7 @@ class VantageJob extends Model
     /**
      * Scope: Failed jobs only
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeFailed($query): void
     {
@@ -207,7 +211,7 @@ class VantageJob extends Model
     /**
      * Scope: Successful jobs only
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeSuccessful($query): void
     {
@@ -217,7 +221,7 @@ class VantageJob extends Model
     /**
      * Scope: Processing jobs only
      *
-     * @param \Illuminate\Database\Eloquent\Builder<VantageJob> $query
+     * @param Builder<VantageJob> $query
      */
     public function scopeProcessing($query): void
     {
@@ -233,7 +237,7 @@ class VantageJob extends Model
             return false;
         }
 
-        return in_array(strtolower($tag), array_map('strtolower', $this->job_tags));
+        return in_array(strtolower($tag), array_map(strtolower(...), $this->job_tags));
     }
 
     /**
@@ -384,7 +388,7 @@ class VantageJob extends Model
     public function getFormattedMemoryDeltaAttribute(): string
     {
         $delta = $this->memory_delta_bytes;
-        
+
         if ($delta === null) {
             return 'N/A';
         }

@@ -34,7 +34,7 @@ class TagExtractor
             // Clean and return
             return self::cleanTags($tags);
 
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return null;
         }
     }
@@ -55,7 +55,7 @@ class TagExtractor
             $command = @unserialize($serialized, ['allowed_classes' => true]);
 
             return is_object($command) ? $command : null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return null;
         }
     }
@@ -96,9 +96,9 @@ class TagExtractor
      */
     protected static function cleanTags(array $tags): ?array
     {
-        $tags = array_filter($tags, fn($tag) => !empty($tag));
+        $tags = array_filter($tags, fn($tag): bool => !empty($tag));
 
-        $tags = array_map(fn($tag) => strtolower(trim($tag)), $tags);
+        $tags = array_map(fn($tag) => strtolower(trim((string) $tag)), $tags);
 
         $tags = array_unique($tags);
 
@@ -111,7 +111,7 @@ class TagExtractor
             $tags = array_slice($tags, 0, $maxTags);
         }
 
-        return !empty($tags) ? $tags : null;
+        return $tags === [] ? null : $tags;
     }
 }
 
