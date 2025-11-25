@@ -209,6 +209,7 @@ class QueueDepthChecker
         if ($depth < 1000) {
             return 'warning';
         }
+
         return 'critical';
     }
 

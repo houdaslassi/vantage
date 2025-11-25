@@ -295,49 +295,49 @@ parameters:
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobFailed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:143 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobFailed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:158 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobFailed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:83 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobFailed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:90 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:118 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:129 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:182 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:201 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:54 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:57 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:182 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:17 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:19 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:201 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:233 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:255 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/JobListenersTest.php
@@ -379,7 +379,7 @@ parameters:
 			path: tests/Feature/RateLimitedJobTest.php
 
 		-
-			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/RateLimitedJobTest\.php\:36 given\.$#'
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/RateLimitedJobTest\.php\:41 given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/Feature/RateLimitedJobTest.php
