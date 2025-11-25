@@ -43,19 +43,19 @@ class PruneOldJobs extends Command
             }
         }
 
-        $query = VantageJob::query()->where('created_at', '<', $cutoff);
+        $builder = VantageJob::query()->where('created_at', '<', $cutoff);
 
         if ($statusFilter) {
-            $query->where('status', $statusFilter);
+            $builder->where('status', $statusFilter);
         }
 
         // Always keep processing jobs unless explicitly included
         if ($keepProcessing || (!$statusFilter && !$keepProcessing)) {
-            $query->where('status', '!=', 'processing');
+            $builder->where('status', '!=', 'processing');
         }
 
         // Get count before deletion
-        $count = $query->count();
+        $count = $builder->count();
 
         if ($count === 0) {
             $this->info("No jobs found older than {$period} to prune.");
@@ -107,7 +107,7 @@ class PruneOldJobs extends Command
         $chunkSize = 1000;
 
         // Use chunking for large deletions
-        $query->chunkById($chunkSize, function ($jobs) use (&$deleted): void {
+        $builder->chunkById($chunkSize, function ($jobs) use (&$deleted): void {
             // Handle retry chain relationships
             // First, nullify retried_from_id for children of jobs we're about to delete
             $parentIds = $jobs->pluck('id')->toArray();

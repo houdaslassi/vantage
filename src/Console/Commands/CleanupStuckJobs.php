@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Console\Commands;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Console\Command;
 use HoudaSlassi\Vantage\Models\VantageJob;
 
@@ -33,14 +34,14 @@ class CleanupStuckJobs extends Command
         $this->warn("Found {$stuckJobs->count()} stuck jobs (processing for more than {$timeoutHours}h)");
 
         if ($dryRun) {
-            /** @var \Illuminate\Database\Eloquent\Collection<int, VantageJob> $stuckJobs */
+            /** @var Collection<int, VantageJob> $stuckJobs */
             $this->table(
                 ['ID', 'Job Class', 'Started At', 'Age'],
-                $stuckJobs->map(fn(VantageJob $job): array => [
-                    $job->id,
-                    class_basename($job->job_class),
-                    $job->started_at->format('Y-m-d H:i:s'),
-                    $job->started_at->diffForHumans(),
+                $stuckJobs->map(fn(VantageJob $vantageJob): array => [
+                    $vantageJob->id,
+                    class_basename($vantageJob->job_class),
+                    $vantageJob->started_at->format('Y-m-d H:i:s'),
+                    $vantageJob->started_at->diffForHumans(),
                 ])
             );
 

@@ -217,8 +217,8 @@ class QueueMonitorController extends Controller
     public function jobs(Request $request): Factory|View
     {
         // Exclude large columns (payload, stack) from jobs list to improve performance
-        $query = VantageJob::query()->select([
-            'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
+        $builder = VantageJob::query()->select([
+            'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
             'status', 'started_at', 'finished_at', 'duration_ms',
             'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
             'created_at', 'updated_at',
@@ -231,15 +231,15 @@ class QueueMonitorController extends Controller
 
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $builder->where('status', $request->status);
         }
 
         if ($request->filled('job_class')) {
-            $query->where('job_class', 'like', '%' . $request->job_class . '%');
+            $builder->where('job_class', 'like', '%' . $request->job_class . '%');
         }
 
         if ($request->filled('queue')) {
-            $query->where('queue', $request->queue);
+            $builder->where('queue', $request->queue);
         }
 
         // Advanced tag filtering
@@ -260,12 +260,12 @@ class QueueMonitorController extends Controller
 
                 if ($request->filled('tag_mode') && $request->tag_mode === 'any') {
                     // Jobs that have ANY of the specified tags
-                    $query->where(function($q) use ($tags, $driver): void {
+                    $builder->where(function($q) use ($tags, $driver): void {
                         foreach ($tags as $tag) {
                             if ($driver === 'sqlite') {
                                 // SQLite: json_each().value returns the actual string, not JSON-encoded
                                 $q->orWhereRaw("EXISTS (
-                                    SELECT 1 FROM json_each(vantage_jobs.job_tags) 
+                                    SELECT 1 FROM json_each(vantage_jobs.job_tags)
                                     WHERE json_each.value = ?
                                 )", [$tag]);
                             } else {
@@ -280,13 +280,13 @@ class QueueMonitorController extends Controller
                         if ($driver === 'sqlite') {
                             // SQLite: json_each().value returns the actual string, not JSON-encoded
                             // So we compare directly to the tag value
-                            $query->whereRaw("EXISTS (
-                                SELECT 1 FROM json_each(vantage_jobs.job_tags) 
+                            $builder->whereRaw("EXISTS (
+                                SELECT 1 FROM json_each(vantage_jobs.job_tags)
                                 WHERE json_each.value = ?
                             )", [$tag]);
                         } else {
                             // MySQL and PostgreSQL
-                            $query->whereJsonContains('job_tags', $tag);
+                            $builder->whereJsonContains('job_tags', $tag);
                         }
                     }
                 }
@@ -300,23 +300,18 @@ class QueueMonitorController extends Controller
 
             if ($driver === 'sqlite') {
                 // SQLite: json_each().value returns the actual string, not JSON-encoded
-                $query->whereRaw("EXISTS (
-                    SELECT 1 FROM json_each(vantage_jobs.job_tags) 
+                $builder->whereRaw("EXISTS (
+                    SELECT 1 FROM json_each(vantage_jobs.job_tags)
                     WHERE json_each.value = ?
                 )", [$tag]);
             } else {
-                $query->whereJsonContains('job_tags', $tag);
+                $builder->whereJsonContains('job_tags', $tag);
             }
         }
 
         if ($request->filled('since')) {
-            $query->where('created_at', '>', $request->since);
+            $builder->where('created_at', '>', $request->since);
         }
-
-        // Get jobs
-        $jobs = $query->latest('id')
-            ->paginate(50)
-            ->appends($request->query());
 
         // Get filter options
         // Only show queues that actually have jobs in vantage_jobs table
@@ -349,6 +344,10 @@ class QueueMonitorController extends Controller
             ])
             ->sortByDesc('total')
             ->take(50); // Limit to top 50 tags
+
+        $jobs = $builder->latest('id')
+            ->paginate(50)
+            ->appends($request->query());
 
         return view('vantage::jobs', ['jobs' => $jobs, 'queues' => $queues, 'jobClasses' => $jobClasses, 'allTags' => $allTags]);
     }
@@ -432,7 +431,7 @@ class QueueMonitorController extends Controller
     {
         // Exclude large columns (payload) from failed jobs list
         // Keep stack for debugging, but exclude payload
-        $jobs = VantageJob::query()->select([
+        $lengthAwarePaginator = VantageJob::query()->select([
                 'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
                 'status', 'started_at', 'finished_at', 'duration_ms',
                 'exception_class', 'exception_message', 'stack', 'job_tags',
@@ -443,7 +442,7 @@ class QueueMonitorController extends Controller
             ->latest('id')
             ->paginate(50);
 
-        return view('vantage::failed', ['jobs' => $jobs]);
+        return view('vantage::failed', ['jobs' => $lengthAwarePaginator]);
     }
 
     /**
