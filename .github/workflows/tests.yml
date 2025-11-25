@@ -58,7 +58,12 @@ jobs:
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction
 
-      - name: Execute tests
+      - name: Execute tests (Laravel 10)
+        if: matrix.laravel == '10.*'
+        run: vendor/bin/pest
+
+      - name: Execute tests with coverage (Laravel 11)
+        if: matrix.laravel == '11.*'
         run: vendor/bin/pest --coverage --min=80
 
       - name: Upload coverage to Codecov
