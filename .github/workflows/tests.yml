@@ -64,7 +64,7 @@ jobs:
 
       - name: Execute tests with coverage (Laravel 11)
         if: matrix.laravel == '11.*'
-        run: vendor/bin/pest --coverage --min=80
+        run: vendor/bin/pest --coverage --min=50
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

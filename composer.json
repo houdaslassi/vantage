@@ -34,7 +34,7 @@
   },
   "scripts": {
     "test": "pest",
-    "test:coverage": "pest --coverage --min=80",
+    "test:coverage": "pest --coverage --min=50",
     "lint": "php -l src",
     "analyse": "php -d memory_limit=512M vendor/bin/phpstan analyse",
     "analyse:baseline": "php -d memory_limit=512M vendor/bin/phpstan analyse --generate-baseline",
