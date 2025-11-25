@@ -35,14 +35,14 @@ class CleanupStuckJobs extends Command
         if ($dryRun) {
             $this->table(
                 ['ID', 'Job Class', 'Started At', 'Age'],
-                $stuckJobs->map(fn($job): array => [
+                $stuckJobs->map(fn(VantageJob $job): array => [
                     $job->id,
                     class_basename($job->job_class),
                     $job->started_at->format('Y-m-d H:i:s'),
                     $job->started_at->diffForHumans(),
                 ])
             );
-            
+
             $this->line("\nDry run - no changes made. Run without --dry-run to clean these up.");
             return self::SUCCESS;
         }

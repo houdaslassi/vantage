@@ -110,7 +110,8 @@ class RecordJobSuccess
             $row->status = JobStatus::Processed;
             $row->finished_at = now();
             if ($row->started_at) {
-                $duration = $row->finished_at->diffInRealMilliseconds($row->started_at, true);
+                $duration = ($row->finished_at->getTimestamp() - $row->started_at->getTimestamp()) * 1000
+                    + (int) ($row->finished_at->format('v') - $row->started_at->format('v'));
                 $row->duration_ms = max(0, (int) $duration);
             }
 
