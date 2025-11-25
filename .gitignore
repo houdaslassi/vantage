@@ -76,3 +76,4 @@ yarn-error.log*
 # Package specific
 .phpunit.result.cache
 auth.json
+composer.lock
