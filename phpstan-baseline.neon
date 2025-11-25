@@ -265,6 +265,12 @@ parameters:
 			path: tests/Feature/JobListenersTest.php
 
 		-
+			message: '#^Call to an undefined method PHPUnit\\Framework\\TestCase\:\:get\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: tests/Feature/QueueMonitorControllerTest.php
+
+		-
 			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 10

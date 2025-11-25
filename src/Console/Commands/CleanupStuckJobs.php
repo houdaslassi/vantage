@@ -24,15 +24,16 @@ class CleanupStuckJobs extends Command
         $stuckJobs = VantageJob::query()->where('status', 'processing')
             ->where('started_at', '<', $cutoff)
             ->get();
-        
+
         if ($stuckJobs->isEmpty()) {
             $this->info('No stuck jobs found!');
             return self::SUCCESS;
         }
-        
+
         $this->warn("Found {$stuckJobs->count()} stuck jobs (processing for more than {$timeoutHours}h)");
-        
+
         if ($dryRun) {
+            /** @var \Illuminate\Database\Eloquent\Collection<int, VantageJob> $stuckJobs */
             $this->table(
                 ['ID', 'Job Class', 'Started At', 'Age'],
                 $stuckJobs->map(fn(VantageJob $job): array => [

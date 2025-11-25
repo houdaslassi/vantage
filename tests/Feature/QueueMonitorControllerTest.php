@@ -8,8 +8,6 @@ beforeEach(function (): void {
 });
 
 it('displays dashboard with job statistics', function (): void {
-    /** @var \HoudaSlassi\Vantage\Tests\TestCase $this */
-
     // Create test jobs
     VantageJob::create([
         'uuid' => Str::uuid(),
@@ -33,8 +31,6 @@ it('displays dashboard with job statistics', function (): void {
 });
 
 it('displays jobs list with filtering', function (): void {
-    /** @var \HoudaSlassi\Vantage\Tests\TestCase $this */
-
     VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -64,8 +60,6 @@ it('displays jobs list with filtering', function (): void {
 });
 
 it('displays individual job details', function (): void {
-    /** @var \HoudaSlassi\Vantage\Tests\TestCase $this */
-
     $job = VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -86,8 +80,6 @@ it('displays individual job details', function (): void {
 });
 
 it('displays retry chain in job details', function (): void {
-    /** @var \HoudaSlassi\Vantage\Tests\TestCase $this */
-
     $original = VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -108,8 +100,6 @@ it('displays retry chain in job details', function (): void {
 });
 
 it('filters jobs by tags', function (): void {
-    /** @var \HoudaSlassi\Vantage\Tests\TestCase $this */
-
     VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
@@ -132,8 +122,6 @@ it('filters jobs by tags', function (): void {
 });
 
 it('displays failed jobs page', function (): void {
-    /** @var \HoudaSlassi\Vantage\Tests\TestCase $this */
-
     VantageJob::create([
         'uuid' => Str::uuid(),
         'job_class' => 'App\\Jobs\\TestJob',
