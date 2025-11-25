@@ -15,13 +15,44 @@ class PayloadExtractor
      * Extract job payload as JSON string for storage
      *
      * Gets COMPLETE payload from Laravel's queue - everything!
+     *
+     * @param $event The queue event (JobProcessing, JobProcessed, or JobFailed)
+     * @param bool $force Force extraction regardless of config strategy
      */
-    public static function getPayload($event): ?string
+    public static function getPayload($event, bool $force = false): ?string
     {
-        if (!config('vantage.store_payload', true)) {
-            return null;
+        $config = config('vantage.store_payload');
+
+        // Support legacy boolean config
+        if (is_bool($config)) {
+            if (!$config) {
+                return null;
+            }
+        } else {
+            // New array config
+            $enabled = $config['enabled'] ?? true;
+            $strategy = $config['strategy'] ?? 'on_failure';
+
+            if (!$enabled || $strategy === 'never') {
+                return $force ? self::extractPayloadData($event) : null;
+            }
+
+            // If strategy is 'on_failure' and not forced, skip extraction
+            if ($strategy === 'on_failure' && !$force) {
+                return null;
+            }
         }
 
+        return self::extractPayloadData($event);
+    }
+
+    /**
+     * Internal method to extract payload data from event
+     *
+     * Separated from getPayload() to support forced extraction
+     */
+    protected static function extractPayloadData($event): ?string
+    {
         try {
             // Get the COMPLETE raw payload from Laravel's queue
             $rawPayload = $event->job->payload();
@@ -83,12 +114,60 @@ class PayloadExtractor
                 return null;
             }
 
-            $command = @unserialize($serialized, ['allowed_classes' => true]);
+            // Use whitelist of allowed classes for security
+            $allowedClasses = self::getAllowedClasses();
+
+            try {
+                $command = unserialize($serialized, ['allowed_classes' => $allowedClasses]);
+            } catch (\Throwable $e) {
+                VantageLogger::warning('PayloadExtractor: Unserialization failed', [
+                    'error' => $e->getMessage(),
+                    'event' => get_class($event),
+                ]);
+                return null;
+            }
 
             return is_object($command) ? $command : null;
         } catch (\Throwable $e) {
+            VantageLogger::error('PayloadExtractor: Failed to get command', [
+                'error' => $e->getMessage(),
+            ]);
             return null;
         }
+    }
+
+    /**
+     * Get whitelist of allowed classes for unserialization
+     *
+     * By default, allows all classes (Laravel's standard behavior for queue jobs).
+     * Users can configure specific classes via 'vantage.allowed_job_classes' for tighter security.
+     *
+     * Note: PHP's unserialize() doesn't support wildcards, so patterns are not supported.
+     * Either provide specific class names or use default (allow all trusted job classes).
+     */
+    protected static function getAllowedClasses()
+    {
+        $configClasses = config('vantage.allowed_job_classes');
+
+        // If not configured, allow all classes (Laravel's default for queue jobs)
+        // This is safe because only trusted jobs should be in the queue
+        if ($configClasses === null) {
+            return true;
+        }
+
+        // If user explicitly set to empty array, don't allow any classes
+        if (is_array($configClasses) && empty($configClasses)) {
+            VantageLogger::warning('PayloadExtractor: No classes allowed for unserialization - payload extraction disabled');
+            return false;
+        }
+
+        // If user provided specific classes, use them
+        if (is_array($configClasses)) {
+            return $configClasses;
+        }
+
+        // Fallback to allow all
+        return true;
     }
 
     /**

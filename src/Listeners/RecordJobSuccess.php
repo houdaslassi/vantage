@@ -11,6 +11,7 @@ use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Queue\Events\JobProcessing;
 use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class RecordJobSuccess
 {
@@ -40,34 +41,47 @@ class RecordJobSuccess
         }
 
         $uuid = $this->bestUuid($event);
+
+        try {
+            $this->recordJobCompletion($event, $uuid);
+        } finally {
+            // Always clear baseline to prevent memory leaks, even if an exception occurs
+            JobPerformanceContext::clearBaseline($uuid);
+        }
+    }
+
+    protected function recordJobCompletion(JobProcessed $event, string $uuid): void
+    {
         $jobClass = $this->jobClass($event);
         $queue = $event->job->getQueue();
         $connection = $event->connectionName ?? null;
 
-        // Try to find existing processing record
-        $row = null;
-        
-        // First, try by stable UUID if available (most reliable)
-        $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid()) 
-                      || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
-        
-        if ($hasStableUuid) {
-            $row = VantageJob::where('uuid', $uuid)
-                ->where('status', 'processing')
-                ->first();
-        }
+        // Use transaction for atomic database operations
+        DB::transaction(function () use ($event, $uuid, $jobClass, $queue, $connection) {
+            // Try to find existing processing record
+            $row = null;
 
-        // Fallback: try by job class, queue, connection (ONLY if UUID not available)
-        // This should rarely be needed since Laravel 8+ provides uuid()
-        if (!$row && !$hasStableUuid) {
-            $row = VantageJob::where('job_class', $jobClass)
-                ->where('queue', $queue)
-                ->where('connection', $connection)
-                ->where('status', 'processing')
-                ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
-                ->orderByDesc('id')
-                ->first();
-        }
+            // First, try by stable UUID if available (most reliable)
+            $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid())
+                          || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
+
+            if ($hasStableUuid) {
+                $row = VantageJob::where('uuid', $uuid)
+                    ->where('status', 'processing')
+                    ->first();
+            }
+
+            // Fallback: try by job class, queue, connection (ONLY if UUID not available)
+            // This should rarely be needed since Laravel 8+ provides uuid()
+            if (!$row && !$hasStableUuid) {
+                $row = VantageJob::where('job_class', $jobClass)
+                    ->where('queue', $queue)
+                    ->where('connection', $connection)
+                    ->where('status', 'processing')
+                    ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
+                    ->orderByDesc('id')
+                    ->first();
+            }
 
         if ($row) {
             // Capture end metrics
@@ -117,9 +131,6 @@ class RecordJobSuccess
 
             $row->save();
 
-            // Clear baseline
-            JobPerformanceContext::clearBaseline($uuid);
-
             VantageLogger::debug('Queue Monitor: Job completed', [
                 'id' => $row->id,
                 'job_class' => $jobClass,
@@ -144,7 +155,8 @@ class RecordJobSuccess
                     'payload' => PayloadExtractor::getPayload($event),
                     'job_tags' => TagExtractor::extract($event),
                 ]);
-        }
+            }
+        });
     }
 
     protected function bestUuid(JobProcessed $event): string

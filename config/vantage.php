@@ -23,8 +23,16 @@ return [
     | When enabled, job data will be stored with automatic redaction of
     | sensitive keys. Disable to save database space if not needed.
     |
+    | Strategy options:
+    | - 'always': Extract payload on every job (higher overhead)
+    | - 'on_failure': Only extract payload when job fails (recommended for performance)
+    | - 'never': Never store payload (reduces storage and overhead)
+    |
     */
-    'store_payload' => env('VANTAGE_STORE_PAYLOAD', true),
+    'store_payload' => [
+        'enabled' => env('VANTAGE_STORE_PAYLOAD', true),
+        'strategy' => env('VANTAGE_PAYLOAD_STRATEGY', 'on_failure'), // 'always' | 'on_failure' | 'never'
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -40,6 +48,32 @@ return [
         'apikey', 'access_token', 'refresh_token', 'private_key',
         'card_number', 'cvv', 'ssn', 'credit_card'
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed Job Classes (Security)
+    |--------------------------------------------------------------------------
+    |
+    | List of fully-qualified class names that are allowed during payload
+    | unserialization. By default (null), all classes are allowed, which is
+    | Laravel's standard behavior for queue jobs.
+    |
+    | For tighter security in sensitive environments, you can specify exact
+    | class names:
+    |
+    | 'allowed_job_classes' => [
+    |     'App\Jobs\SendEmail',
+    |     'App\Jobs\ProcessPayment',
+    |     'Illuminate\Queue\SerializesModels',
+    |     'Illuminate\Database\Eloquent\Model',
+    |     // ... add your job classes
+    | ],
+    |
+    | Note: This only affects payload extraction for debugging. Queue execution
+    | is not affected. If unsure, leave as null (default: allow all trusted jobs).
+    |
+    */
+    'allowed_job_classes' => null,
 
     /*
     |--------------------------------------------------------------------------

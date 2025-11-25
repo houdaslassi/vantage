@@ -8,6 +8,7 @@ use HoudaSlassi\Vantage\Support\PayloadExtractor;
 use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 use Illuminate\Queue\Events\JobProcessing;
 use HoudaSlassi\Vantage\Models\VantageJob;
+use Illuminate\Support\Facades\DB;
 
 class RecordJobStart
 {
@@ -53,28 +54,31 @@ class RecordJobStart
             }
         }
 
-        $payloadJson = PayloadExtractor::getPayload($event);
-        $jobClass = $this->jobClass($event);
-        $queue = $event->job->getQueue();
-        $connection = $event->connectionName ?? null;
+        // Use transaction to ensure atomic operations
+        DB::transaction(function () use ($event, $uuid, $memoryStart, $memoryPeakStart) {
+            $payloadJson = PayloadExtractor::getPayload($event);
+            $jobClass = $this->jobClass($event);
+            $queue = $event->job->getQueue();
+            $connection = $event->connectionName ?? null;
 
-        // Always create a new record on job start
-        // The UUID will be used by Success/Failure listeners to find and update this record
-        VantageJob::create([
-            'uuid'             => $uuid,
-            'job_class'        => $jobClass,
-            'queue'            => $queue,
-            'connection'       => $connection,
-            'attempt'          => $event->job->attempts(),
-            'status'           => 'processing',
-            'started_at'       => now(),
-            'retried_from_id'  => $this->getRetryOf($event),
-            'payload'          => $payloadJson,
-            'job_tags'         => TagExtractor::extract($event),
-            // telemetry columns (nullable if disabled/unsampled)
-            'memory_start_bytes' => $memoryStart,
-            'memory_peak_start_bytes' => $memoryPeakStart,
-        ]);
+            // Always create a new record on job start
+            // The UUID will be used by Success/Failure listeners to find and update this record
+            VantageJob::create([
+                'uuid'             => $uuid,
+                'job_class'        => $jobClass,
+                'queue'            => $queue,
+                'connection'       => $connection,
+                'attempt'          => $event->job->attempts(),
+                'status'           => 'processing',
+                'started_at'       => now(),
+                'retried_from_id'  => $this->getRetryOf($event),
+                'payload'          => $payloadJson,
+                'job_tags'         => TagExtractor::extract($event),
+                // telemetry columns (nullable if disabled/unsampled)
+                'memory_start_bytes' => $memoryStart,
+                'memory_peak_start_bytes' => $memoryPeakStart,
+            ]);
+        });
     }
 
     /**

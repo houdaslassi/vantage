@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Str;
 use HoudaSlassi\Vantage\Models\VantageJob;
+use Illuminate\Support\Facades\DB;
 
 class RecordJobFailure
 {
@@ -25,34 +26,47 @@ class RecordJobFailure
         }
 
         $uuid = $this->bestUuid($event);
+
+        try {
+            $this->recordJobFailureDetails($event, $uuid);
+        } finally {
+            // Always clear baseline to prevent memory leaks, even if an exception occurs
+            JobPerformanceContext::clearBaseline($uuid);
+        }
+    }
+
+    protected function recordJobFailureDetails(JobFailed $event, string $uuid): void
+    {
         $jobClass = $this->jobClass($event);
         $queue = $event->job->getQueue();
         $connection = $event->connectionName ?? null;
 
-        // Try to find existing processing record
-        $row = null;
+        // Use transaction for atomic database operations
+        $row = DB::transaction(function () use ($event, $uuid, $jobClass, $queue, $connection) {
+            // Try to find existing processing record
+            $row = null;
 
-        // First, try by stable UUID if available (most reliable)
-        $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid())
-                      || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
+            // First, try by stable UUID if available (most reliable)
+            $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid())
+                          || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
 
-        if ($hasStableUuid) {
-            $row = VantageJob::where('uuid', $uuid)
-                ->where('status', 'processing')
-                ->first();
-        }
+            if ($hasStableUuid) {
+                $row = VantageJob::where('uuid', $uuid)
+                    ->where('status', 'processing')
+                    ->first();
+            }
 
-        // Fallback: try by job class, queue, connection (ONLY if UUID not available)
-        // This should rarely be needed since Laravel 8+ provides uuid()
-        if (!$row && !$hasStableUuid) {
-            $row = VantageJob::where('job_class', $jobClass)
-                ->where('queue', $queue)
-                ->where('connection', $connection)
-                ->where('status', 'processing')
-                ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
-                ->orderByDesc('id')
-                ->first();
-        }
+            // Fallback: try by job class, queue, connection (ONLY if UUID not available)
+            // This should rarely be needed since Laravel 8+ provides uuid()
+            if (!$row && !$hasStableUuid) {
+                $row = VantageJob::where('job_class', $jobClass)
+                    ->where('queue', $queue)
+                    ->where('connection', $connection)
+                    ->where('status', 'processing')
+                    ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
+                    ->orderByDesc('id')
+                    ->first();
+            }
 
         $telemetryEnabled = config('vantage.telemetry.enabled', true);
         $captureCpu = config('vantage.telemetry.capture_cpu', true);
@@ -101,9 +115,6 @@ class RecordJobFailure
             $row->cpu_user_ms = $cpuDelta['user_ms'];
             $row->cpu_sys_ms = $cpuDelta['sys_ms'];
             $row->save();
-
-            // Clear baseline
-            JobPerformanceContext::clearBaseline($uuid);
         } else {
             // Fallback: Create new record if we didn't catch the start
             VantageLogger::warning('Queue Monitor: No processing record found for failed job, creating new', [
@@ -123,7 +134,7 @@ class RecordJobFailure
                 'stack'            => Str::limit($event->exception->getTraceAsString(), 4000),
                 'finished_at'      => now(),
                 'retried_from_id'  => $this->getRetryOf($event),
-                'payload'          => PayloadExtractor::getPayload($event),
+                'payload'          => PayloadExtractor::getPayload($event, true), // Force extraction on failure
                 'job_tags'         => TagExtractor::extract($event),
                 // telemetry end metrics
                 'memory_end_bytes' => $memoryEnd,
@@ -131,7 +142,10 @@ class RecordJobFailure
                 'cpu_user_ms' => $cpuDelta['user_ms'],
                 'cpu_sys_ms' => $cpuDelta['sys_ms'],
             ]);
-        }
+            }
+
+            return $row;
+        });
 
         VantageLogger::info('Queue Monitor: Job failed', [
            'id' => $row->id,
