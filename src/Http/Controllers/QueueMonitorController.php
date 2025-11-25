@@ -316,7 +316,7 @@ class QueueMonitorController extends Controller
         // Get jobs
         $jobs = $query->latest('id')
             ->paginate(50)
-            ->withQueryString();
+            ->appends($request->query());
 
         // Get filter options
         // Only show queues that actually have jobs in vantage_jobs table
