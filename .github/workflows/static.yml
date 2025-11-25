@@ -1,0 +1,53 @@
+name: Static Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'refactor/**'
+      - 'hotfix/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  static:
+    if: github.event_name != 'schedule' || github.repository == 'houdaslassi/vantage'
+    name: Static Analysis
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        dependency-version: [prefer-lowest, prefer-stable]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Install dependencies
+        run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHP lint
+        run: composer lint
+
+      - name: Run PHPStan
+        run: composer analyse
+
+      - name: Run Rector (dry-run)
+        run: composer rector:dry
+
+      - name: Security audit
+        run: composer audit
