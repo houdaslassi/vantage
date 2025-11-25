@@ -1,5 +1,6 @@
 <?php
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Support\Str;
 
@@ -24,7 +25,7 @@ it('can create a queue job run', function () {
     expect($job)->toBeInstanceOf(VantageJob::class)
         ->and($job->uuid)->toBe('test-uuid-123')
         ->and($job->job_class)->toBe('App\\Jobs\\ExampleJob')
-        ->and($job->status)->toBe('processing');
+        ->and($job->status)->toBe(JobStatus::Processing);
 });
 
 it('casts job_tags to array', function () {

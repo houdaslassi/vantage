@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Listeners;
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use HoudaSlassi\Vantage\Support\TagExtractor;
 use HoudaSlassi\Vantage\Support\PayloadExtractor;
@@ -69,7 +70,7 @@ class RecordJobStart
                 'queue'            => $queue,
                 'connection'       => $connection,
                 'attempt'          => $event->job->attempts(),
-                'status'           => 'processing',
+                'status'           => JobStatus::Processing,
                 'started_at'       => now(),
                 'retried_from_id'  => $this->getRetryOf($event),
                 'payload'          => $payloadJson,

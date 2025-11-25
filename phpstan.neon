@@ -1,0 +1,18 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - src
+        - tests
+
+    excludePaths:
+        - vendor
+
+    # Increase memory limit for analysis
+    tmpDir: var/cache/phpstan
+
+    # Type inference - be more strict with PHPDoc types
+    treatPhpDocTypesAsCertain: false

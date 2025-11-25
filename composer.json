@@ -22,7 +22,8 @@
   },
   "require-dev": {
     "orchestra/testbench": "^10.0",
-    "pestphp/pest": "^3.8"
+    "pestphp/pest": "^3.8",
+        "rector/rector": "^2.2"
   },
   "extra": {
     "laravel": {
@@ -33,7 +34,22 @@
   },
   "scripts": {
     "test": "pest",
-    "lint": "php -l src"
+    "test:coverage": "pest --coverage --min=80",
+    "lint": "php -l src",
+    "analyse": "php -d memory_limit=512M vendor/bin/phpstan analyse",
+    "analyse:baseline": "php -d memory_limit=512M vendor/bin/phpstan analyse --generate-baseline",
+    "rector": "rector process",
+    "rector:dry": "rector process --dry-run",
+    "quality": [
+      "@lint",
+      "@analyse",
+      "@rector:dry",
+      "@test"
+    ],
+    "quality:fix": [
+      "@rector",
+      "@test"
+    ]
   },
   "config": {
     "allow-plugins": {

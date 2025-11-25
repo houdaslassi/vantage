@@ -1,0 +1,451 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Console/Commands/CleanupStuckJobs.php
+
+		-
+			message: '#^Parameter \#1 \$value of method Carbon\\Carbon\:\:subHours\(\) expects float\|int, array\|bool\|string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Console/Commands/CleanupStuckJobs.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:count\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Console/Commands/PruneOldJobs.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: src/Console/Commands/PruneOldJobs.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 3
+			path: src/Console/Commands/PruneOldJobs.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 2
+			path: src/Console/Commands/PruneOldJobs.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:find\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Console/Commands/RetryFailedJob.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Console/Commands/RetryFailedJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$job_class\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$queue\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$since\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$tag\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Http\\Request\:\:\$tag_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:distinct\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:findOrFail\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:select\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 13
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 11
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\Carbon\:\:diffInRealMilliseconds\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Listeners/RecordJobFailure.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Listeners/RecordJobFailure.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: src/Listeners/RecordJobFailure.php
+
+		-
+			message: '#^Property Illuminate\\Queue\\Events\\JobFailed\:\:\$connectionName \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: src/Listeners/RecordJobFailure.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: src/Listeners/RecordJobFailure.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Listeners/RecordJobStart.php
+
+		-
+			message: '#^Property Illuminate\\Queue\\Events\\JobProcessing\:\:\$connectionName \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: src/Listeners/RecordJobStart.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: src/Listeners/RecordJobStart.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Support\\Carbon\:\:diffInRealMilliseconds\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Listeners/RecordJobSuccess.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Listeners/RecordJobSuccess.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: src/Listeners/RecordJobSuccess.php
+
+		-
+			message: '#^Property Illuminate\\Queue\\Events\\JobProcessed\:\:\$connectionName \(string\) on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.property
+			count: 1
+			path: src/Listeners/RecordJobSuccess.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: src/Listeners/RecordJobSuccess.php
+
+		-
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$cpu_total_ms\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/VantageJob.php
+
+		-
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$memory_delta_bytes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: src/Models/VantageJob.php
+
+		-
+			message: '#^Generic type Illuminate\\Database\\Eloquent\\Relations\\HasMany\<HoudaSlassi\\Vantage\\Models\\VantageJob\> in PHPDoc tag @return does not specify all template types of class Illuminate\\Database\\Eloquent\\Relations\\HasMany\: TRelatedModel, TDeclaringModel$#'
+			identifier: generics.lessTypes
+			count: 1
+			path: src/Models/VantageJob.php
+
+		-
+			message: '#^Method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:retriedFrom\(\) should return Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<HoudaSlassi\\Vantage\\Models\\VantageJob, HoudaSlassi\\Vantage\\Models\\VantageJob\> but returns Illuminate\\Database\\Eloquent\\Relations\\BelongsTo\<HoudaSlassi\\Vantage\\Models\\VantageJob, \$this\(HoudaSlassi\\Vantage\\Models\\VantageJob\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Models/VantageJob.php
+
+		-
+			message: '#^Method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:retries\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<HoudaSlassi\\Vantage\\Models\\VantageJob\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<HoudaSlassi\\Vantage\\Models\\VantageJob, \$this\(HoudaSlassi\\Vantage\\Models\\VantageJob\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Models/VantageJob.php
+
+		-
+			message: '#^Parameter \#1 \$json of function json_decode expects string, array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Models/VantageJob.php
+
+		-
+			message: '#^Call to method error\(\) on an unknown class Illuminate\\Notifications\\Messages\\SlackMessage\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Notifications/JobFailedNotification.php
+
+		-
+			message: '#^Instantiated class Illuminate\\Notifications\\Messages\\SlackMessage not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Notifications/JobFailedNotification.php
+
+		-
+			message: '#^Method HoudaSlassi\\Vantage\\Notifications\\JobFailedNotification\:\:toSlack\(\) has invalid return type Illuminate\\Notifications\\Messages\\SlackMessage\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Notifications/JobFailedNotification.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Redis\\Connections\\Connection\:\:keys\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Support/QueueDepthChecker.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Redis\\Connections\\Connection\:\:llen\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: src/Support/QueueDepthChecker.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Redis\\Connections\\Connection\:\:select\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Support/QueueDepthChecker.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Support/QueueDepthChecker.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 2
+			path: src/Support/QueueDepthChecker.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 4
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:find\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 7
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobFailed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:143 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobFailed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:83 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:118 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:182 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:54 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:182 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:19 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessing constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/JobListenersTest\.php\:233 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/JobListenersTest.php
+
+		-
+			message: '#^Call to an undefined method PHPUnit\\Framework\\TestCase\:\:get\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: tests/Feature/QueueMonitorControllerTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 10
+			path: tests/Feature/QueueMonitorControllerTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Feature/RateLimitedJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:find\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Feature/RateLimitedJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Feature/RateLimitedJobTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/RateLimitedJobTest\.php\:11 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/RateLimitedJobTest.php
+
+		-
+			message: '#^Parameter \#2 \$job of class Illuminate\\Queue\\Events\\JobProcessed constructor expects Illuminate\\Contracts\\Queue\\Job, class@anonymous/tests/Feature/RateLimitedJobTest\.php\:36 given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/Feature/RateLimitedJobTest.php
+
+		-
+			message: '#^Call to an undefined method PHPUnit\\Framework\\TestCase\:\:get\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: tests/RoutePrefixTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/QueueDepthCheckerTest.php
+
+		-
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$formatted_duration\.$#'
+			identifier: property.notFound
+			count: 3
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$retriedFrom\.$#'
+			identifier: property.notFound
+			count: 2
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:failed\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:processing\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:successful\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Call to an undefined static method HoudaSlassi\\Vantage\\Models\\VantageJob\:\:withTag\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: tests/Unit/VantageJobTest.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Log\:\:shouldHaveReceived\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/VantageLoggerTest.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Log\:\:shouldNotHaveReceived\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: tests/Unit/VantageLoggerTest.php

@@ -1,5 +1,6 @@
 <?php
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Listeners\RecordJobFailure;
 use HoudaSlassi\Vantage\Listeners\RecordJobStart;
 use HoudaSlassi\Vantage\Listeners\RecordJobSuccess;
@@ -36,7 +37,7 @@ it('records job start when job processing event is fired', function () {
 
     expect($record)->not->toBeNull()
         ->and($record->job_class)->toBe('App\\Jobs\\TestJob')
-        ->and($record->status)->toBe('processing')
+        ->and($record->status)->toBe(JobStatus::Processing)
         ->and($record->queue)->toBe('default')
         ->and($record->started_at)->not->toBeNull();
 });
@@ -46,7 +47,7 @@ it('records job success and calculates duration', function () {
     $jobRun = VantageJob::create([
         'uuid' => 'test-uuid-123',
         'job_class' => 'App\\Jobs\\TestJob',
-        'status' => 'processing',
+        'status' => JobStatus::Processing,
         'started_at' => now()->subSeconds(5),
     ]);
 
@@ -64,7 +65,7 @@ it('records job success and calculates duration', function () {
 
     $record = VantageJob::where('uuid', 'test-uuid-123')->first();
 
-    expect($record->status)->toBe('processed')
+    expect($record->status)->toBe(JobStatus::Processed)
         ->and($record->finished_at)->not->toBeNull()
         ->and($record->duration_ms)->toBeGreaterThan(0);
 });
@@ -95,7 +96,7 @@ it('updates same record from processing to failed', function () {
     $updated = VantageJob::find($jobRun->id);
 
     expect($updated->id)->toBe($jobRun->id)
-        ->and($updated->status)->toBe('failed')
+        ->and($updated->status)->toBe(JobStatus::Failed)
         ->and($updated->exception_class)->toBe('Exception')
         ->and($updated->exception_message)->toContain('Test exception')
         ->and($updated->finished_at)->not->toBeNull()
@@ -130,7 +131,7 @@ it('updates same record from processing to processed', function () {
     $updated = VantageJob::find($jobRun->id);
 
     expect($updated->id)->toBe($jobRun->id)
-        ->and($updated->status)->toBe('processed')
+        ->and($updated->status)->toBe(JobStatus::Processed)
         ->and($updated->finished_at)->not->toBeNull()
         ->and($updated->duration_ms)->toBeGreaterThan(0);
 
@@ -215,7 +216,7 @@ it('tracks retry chain via retried_from_id', function () {
     $successListener->handle($successEvent);
 
     $retryRecord->refresh();
-    expect($retryRecord->status)->toBe('processed');
+    expect($retryRecord->status)->toBe(JobStatus::Processed);
 });
 
 it('extracts and stores job tags', function () {

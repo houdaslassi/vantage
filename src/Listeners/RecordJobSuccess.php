@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Listeners;
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use HoudaSlassi\Vantage\Support\TagExtractor;
 use HoudaSlassi\Vantage\Support\PayloadExtractor;
@@ -67,7 +68,7 @@ class RecordJobSuccess
 
             if ($hasStableUuid) {
                 $row = VantageJob::where('uuid', $uuid)
-                    ->where('status', 'processing')
+                    ->where('status', JobStatus::Processing)
                     ->first();
             }
 
@@ -77,7 +78,7 @@ class RecordJobSuccess
                 $row = VantageJob::where('job_class', $jobClass)
                     ->where('queue', $queue)
                     ->where('connection', $connection)
-                    ->where('status', 'processing')
+                    ->where('status', JobStatus::Processing)
                     ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
                     ->orderByDesc('id')
                     ->first();
@@ -111,7 +112,7 @@ class RecordJobSuccess
             }
 
             // Update existing record
-            $row->status = 'processed';
+            $row->status = JobStatus::Processed;
             $row->finished_at = now();
             if ($row->started_at) {
                 $duration = $row->finished_at->diffInRealMilliseconds($row->started_at, true);
@@ -149,7 +150,7 @@ class RecordJobSuccess
                     'queue' => $queue,
                     'connection' => $connection,
                     'attempt' => $event->job->attempts(),
-                    'status' => 'processed',
+                    'status' => JobStatus::Processed,
                     'finished_at' => now(),
                     'retried_from_id' => $this->getRetryOf($event),
                     'payload' => PayloadExtractor::getPayload($event),

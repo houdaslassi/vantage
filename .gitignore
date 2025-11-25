@@ -1,24 +1,81 @@
 # Dependencies
 /vendor/
 /node_modules/
+composer.phar
 
-# IDE
+# IDE Files
 .idea/
 .vscode/
 *.swp
 *.swo
+*.sublime-project
+*.sublime-workspace
 .phpstorm.meta.php
+_ide_helper.php
+_ide_helper_models.php
 
-# OS
+# OS Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
 
 # Testing
 .phpunit.result.cache
+.phpunit.cache
 .pest.xml
+/coverage/
+/coverage.xml
+/.phpunit.cache/
+
+# Code Quality & Analysis
+/var/
+/var/cache/
+/var/cache/phpstan/
+rector-cache/
+.php-cs-fixer.cache
+.php_cs.cache
+.phpcs-cache
+
+# Build Artifacts
+/build/
+/dist/
+*.phar
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.backup
+.env.production
+
+# Logs
+*.log
+/storage/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Composer
+/composer.lock
 
 # Local docs (keep these out)
 # RELEASE.md - internal release guide
 # TODO.md - internal notes
 # TAG_LOGIC_MAP.md - internal
 # USAGE_EXAMPLES.md - internal
+
+# Package specific
+.phpunit.result.cache
+auth.json

@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Listeners;
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Notifications\JobFailedNotification;
 use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use HoudaSlassi\Vantage\Support\TagExtractor;
@@ -52,7 +53,7 @@ class RecordJobFailure
 
             if ($hasStableUuid) {
                 $row = VantageJob::where('uuid', $uuid)
-                    ->where('status', 'processing')
+                    ->where('status', JobStatus::Processing)
                     ->first();
             }
 
@@ -62,7 +63,7 @@ class RecordJobFailure
                 $row = VantageJob::where('job_class', $jobClass)
                     ->where('queue', $queue)
                     ->where('connection', $connection)
-                    ->where('status', 'processing')
+                    ->where('status', JobStatus::Processing)
                     ->where('created_at', '>', now()->subMinute()) // Keep it tight to avoid matching wrong job
                     ->orderByDesc('id')
                     ->first();
@@ -97,7 +98,7 @@ class RecordJobFailure
 
         if ($row) {
             // Update existing processing record
-            $row->status = 'failed';
+            $row->status = JobStatus::Failed;
             $row->exception_class = get_class($event->exception);
             $row->exception_message = Str::limit($event->exception->getMessage(), 2000);
             $row->stack = Str::limit($event->exception->getTraceAsString(), 4000);
@@ -128,7 +129,7 @@ class RecordJobFailure
                 'queue'            => $queue,
                 'connection'       => $connection,
                 'attempt'          => $event->job->attempts(),
-                'status'           => 'failed',
+                'status'           => JobStatus::Failed,
                 'exception_class'  => get_class($event->exception),
                 'exception_message'=> Str::limit($event->exception->getMessage(), 2000),
                 'stack'            => Str::limit($event->exception->getTraceAsString(), 4000),

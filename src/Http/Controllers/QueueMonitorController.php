@@ -2,6 +2,7 @@
 
 namespace HoudaSlassi\Vantage\Http\Controllers;
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\QueueDepthChecker;
 use HoudaSlassi\Vantage\Support\VantageLogger;
@@ -24,9 +25,9 @@ class QueueMonitorController extends Controller
         // Overall statistics
         $stats = [
             'total' => VantageJob::where('created_at', '>', $since)->count(),
-            'processed' => VantageJob::where('created_at', '>', $since)->where('status', 'processed')->count(),
-            'failed' => VantageJob::where('created_at', '>', $since)->where('status', 'failed')->count(),
-            'processing' => VantageJob::where('status', 'processing')
+            'processed' => VantageJob::where('created_at', '>', $since)->where('status', JobStatus::Processed)->count(),
+            'failed' => VantageJob::where('created_at', '>', $since)->where('status', JobStatus::Failed)->count(),
+            'processing' => VantageJob::where('status', JobStatus::Processing)
                 ->where('created_at', '>', now()->subHour()) // Only recent processing jobs
                 ->count(),
             'avg_duration' => VantageJob::where('created_at', '>', $since)
@@ -57,7 +58,7 @@ class QueueMonitorController extends Controller
             ->where('created_at', '>', $since)
             ->groupBy('status')
             ->get()
-            ->pluck('count', 'status');
+            ->mapWithKeys(fn($item) => [$item->status->value => $item->count]);
 
         // Jobs by hour (for trend chart)
         // Use database-agnostic date formatting
@@ -76,10 +77,11 @@ class QueueMonitorController extends Controller
             $dateFormat = DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour');
         }
         
+        $failedValue = JobStatus::Failed->value;
         $jobsByHour = VantageJob::select(
                 $dateFormat,
                 DB::raw('count(*) as count'),
-                DB::raw("sum(case when status = 'failed' then 1 else 0 end) as failed_count")
+                DB::raw("sum(case when status = '{$failedValue}' then 1 else 0 end) as failed_count")
             )
             ->where('created_at', '>', $since)
             ->groupBy('hour')
@@ -89,7 +91,7 @@ class QueueMonitorController extends Controller
         // Top failing jobs
         $topFailingJobs = VantageJob::select('job_class', DB::raw('count(*) as failure_count'))
             ->where('created_at', '>', $since)
-            ->where('status', 'failed')
+            ->where('status', JobStatus::Failed)
             ->groupBy('job_class')
             ->orderByDesc('failure_count')
             ->limit(5)
@@ -132,9 +134,9 @@ class QueueMonitorController extends Controller
                 return [
                     'tag' => $tag,
                     'total' => $jobs->count(),
-                    'failed' => $jobs->where('status', 'failed')->count(),
-                    'processed' => $jobs->where('status', 'processed')->count(),
-                    'processing' => $jobs->where('status', 'processing')->count(),
+                    'failed' => $jobs->where('status', JobStatus::Failed)->count(),
+                    'processed' => $jobs->where('status', JobStatus::Processed)->count(),
+                    'processing' => $jobs->where('status', JobStatus::Processing)->count(),
                 ];
             })
             ->sortByDesc('total')
@@ -377,9 +379,9 @@ class QueueMonitorController extends Controller
                 return [
                     'tag' => $tag,
                     'total' => $jobs->count(),
-                    'processed' => $jobs->where('status', 'processed')->count(),
-                    'failed' => $jobs->where('status', 'failed')->count(),
-                    'processing' => $jobs->where('status', 'processing')->count(),
+                    'processed' => $jobs->where('status', JobStatus::Processed)->count(),
+                    'failed' => $jobs->where('status', JobStatus::Failed)->count(),
+                    'processing' => $jobs->where('status', JobStatus::Processing)->count(),
                 ];
             })
             ->sortByDesc('total')
@@ -433,7 +435,7 @@ class QueueMonitorController extends Controller
                 }
 
                 $tagStats[$tag]['total']++;
-                $tagStats[$tag][$job->status]++;
+                $tagStats[$tag][$job->status->value]++;
 
                 if ($job->duration_ms) {
                     $tagStats[$tag]['durations'][] = $job->duration_ms;
@@ -468,13 +470,13 @@ class QueueMonitorController extends Controller
         // Exclude large columns (payload) from failed jobs list
         // Keep stack for debugging, but exclude payload
         $jobs = VantageJob::select([
-                'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
+                'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
                 'status', 'started_at', 'finished_at', 'duration_ms',
-                'exception_class', 'exception_message', 'stack', 'job_tags', 
+                'exception_class', 'exception_message', 'stack', 'job_tags',
                 'retried_from_id', 'created_at', 'updated_at'
                 // Exclude: payload (very large, not needed for failed list)
             ])
-            ->where('status', 'failed')
+            ->where('status', JobStatus::Failed)
             ->latest('id')
             ->paginate(50);
 
@@ -488,7 +490,7 @@ class QueueMonitorController extends Controller
     {
         $run = VantageJob::findOrFail($id);
 
-        if ($run->status !== 'failed') {
+        if ($run->status !== JobStatus::Failed) {
             return back()->with('error', 'Only failed jobs can be retried.');
         }
 

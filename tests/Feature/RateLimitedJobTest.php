@@ -1,5 +1,6 @@
 <?php
 
+use HoudaSlassi\Vantage\Enums\JobStatus;
 use HoudaSlassi\Vantage\Listeners\RecordJobSuccess;
 use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Queue\Events\JobProcessed;
@@ -46,7 +47,7 @@ it('still counts normal processed jobs', function () {
 
     $updated = VantageJob::find($record->id);
 
-    expect($updated->status)->toBe('processed')
+    expect($updated->status)->toBe(JobStatus::Processed)
         ->and($updated->finished_at)->not()->toBeNull();
 });
 
