@@ -2,13 +2,25 @@
 
 namespace HoudaSlassi\Vantage\Models;
 
+use HoudaSlassi\Vantage\Database\Factories\VantageJobFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class VantageJob extends Model
 {
+    use HasFactory;
+
     protected $table = 'vantage_jobs';
 
     protected static $unguarded = true;
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): VantageJobFactory
+    {
+        return VantageJobFactory::new();
+    }
 
     /**
      * Get the database connection for the model.
