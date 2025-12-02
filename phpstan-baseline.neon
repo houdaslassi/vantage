@@ -37,7 +37,7 @@ parameters:
 			path: src/Console/Commands/PruneOldJobs.php
 
 		-
-			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$exception_message\.$#'
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 1
 			path: src/Console/Commands/RetryFailedJob.php
@@ -55,13 +55,13 @@ parameters:
 			path: src/Console/Commands/RetryFailedJob.php
 
 		-
-			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$payload\.$#'
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$exception_message\.$#'
 			identifier: property.notFound
 			count: 1
 			path: src/Console/Commands/RetryFailedJob.php
 
 		-
-			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$status\.$#'
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$payload\.$#'
 			identifier: property.notFound
 			count: 1
 			path: src/Console/Commands/RetryFailedJob.php
