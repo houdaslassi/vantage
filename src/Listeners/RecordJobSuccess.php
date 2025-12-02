@@ -2,15 +2,13 @@
 
 namespace HoudaSlassi\Vantage\Listeners;
 
-use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
-use HoudaSlassi\Vantage\Support\TagExtractor;
-use HoudaSlassi\Vantage\Support\PayloadExtractor;
-use HoudaSlassi\Vantage\Support\JobPerformanceContext;
-use Illuminate\Queue\Events\JobProcessed;
 use HoudaSlassi\Vantage\Models\VantageJob;
-use Illuminate\Queue\Events\JobProcessing;
+use HoudaSlassi\Vantage\Support\JobPerformanceContext;
+use HoudaSlassi\Vantage\Support\PayloadExtractor;
+use HoudaSlassi\Vantage\Support\TagExtractor;
+use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use HoudaSlassi\Vantage\Support\VantageLogger;
-use Illuminate\Support\Str;
+use Illuminate\Queue\Events\JobProcessed;
 
 class RecordJobSuccess
 {
@@ -19,7 +17,7 @@ class RecordJobSuccess
     public function handle(JobProcessed $event): void
     {
         // Master switch: if package is disabled, don't track anything
-        if (!config('vantage.enabled', true)) {
+        if (! config('vantage.enabled', true)) {
             return;
         }
 
@@ -29,6 +27,7 @@ class RecordJobSuccess
             VantageLogger::debug('Queue Monitor: Job was released, skipping processed record', [
                 'job_class' => $this->jobClass($event),
             ]);
+
             return;
         }
 
@@ -39,11 +38,11 @@ class RecordJobSuccess
 
         // Try to find existing processing record
         $row = null;
-        
+
         // First, try by stable UUID if available (most reliable)
-        $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid()) 
+        $hasStableUuid = (method_exists($event->job, 'uuid') && $event->job->uuid())
                       || (method_exists($event->job, 'getJobId') && $event->job->getJobId());
-        
+
         if ($hasStableUuid) {
             $row = VantageJob::where('uuid', $uuid)
                 ->where('status', 'processing')
@@ -52,7 +51,7 @@ class RecordJobSuccess
 
         // Fallback: try by job class, queue, connection (ONLY if UUID not available)
         // This should rarely be needed since Laravel 8+ provides uuid()
-        if (!$row && !$hasStableUuid) {
+        if (! $row && ! $hasStableUuid) {
             $row = VantageJob::where('job_class', $jobClass)
                 ->where('queue', $queue)
                 ->where('connection', $connection)
@@ -79,11 +78,11 @@ class RecordJobSuccess
                     $ru = @getrusage();
                     if (is_array($ru)) {
                         $userUs = ($ru['ru_utime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_utime.tv_usec'] ?? 0);
-                        $sysUs  = ($ru['ru_stime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_stime.tv_usec'] ?? 0);
+                        $sysUs = ($ru['ru_stime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_stime.tv_usec'] ?? 0);
                         $baseline = JobPerformanceContext::getBaseline($uuid);
                         if ($baseline) {
                             $cpuDelta['user_ms'] = max(0, (int) round(($userUs - ($baseline['cpu_start_user_us'] ?? 0)) / 1000));
-                            $cpuDelta['sys_ms']  = max(0, (int) round(($sysUs  - ($baseline['cpu_start_sys_us'] ?? 0)) / 1000));
+                            $cpuDelta['sys_ms'] = max(0, (int) round(($sysUs - ($baseline['cpu_start_sys_us'] ?? 0)) / 1000));
                         }
                     }
                 }
@@ -125,18 +124,18 @@ class RecordJobSuccess
                 'uuid' => $uuid,
             ]);
 
-                VantageJob::create([
-                    'uuid' => $uuid,
-                    'job_class' => $jobClass,
-                    'queue' => $queue,
-                    'connection' => $connection,
-                    'attempt' => $event->job->attempts(),
-                    'status' => 'processed',
-                    'finished_at' => now(),
-                    'retried_from_id' => $this->getRetryOf($event),
-                    'payload' => PayloadExtractor::getPayload($event),
-                    'job_tags' => TagExtractor::extract($event),
-                ]);
+            VantageJob::create([
+                'uuid' => $uuid,
+                'job_class' => $jobClass,
+                'queue' => $queue,
+                'connection' => $connection,
+                'attempt' => $event->job->attempts(),
+                'status' => 'processed',
+                'finished_at' => now(),
+                'retried_from_id' => $this->getRetryOf($event),
+                'payload' => PayloadExtractor::getPayload($event),
+                'job_tags' => TagExtractor::extract($event),
+            ]);
         }
     }
 
@@ -155,7 +154,6 @@ class RecordJobSuccess
         // Last resort: generate new UUID
         return (string) \Illuminate\Support\Str::uuid();
     }
-
 
     protected function jobClass(JobProcessed $event): string
     {

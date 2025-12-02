@@ -21,10 +21,10 @@ class VantageJob extends Model
     }
 
     protected $casts = [
-        'started_at'  => 'datetime',
+        'started_at' => 'datetime',
         'finished_at' => 'datetime',
-        'job_tags'    => 'array',
-        'payload'     => 'array',
+        'job_tags' => 'array',
+        'payload' => 'array',
         // Telemetry numeric casts
         'duration_ms' => 'integer',
         'memory_start_bytes' => 'integer',
@@ -57,7 +57,7 @@ class VantageJob extends Model
      */
     public function getDecodedPayloadAttribute(): ?array
     {
-        if (!$this->payload) {
+        if (! $this->payload) {
             return null;
         }
 
@@ -77,7 +77,7 @@ class VantageJob extends Model
      */
     public function scopeWithAnyTag($query, array $tags)
     {
-        return $query->where(function($q) use ($tags) {
+        return $query->where(function ($q) use ($tags) {
             foreach ($tags as $tag) {
                 $q->orWhereJsonContains('job_tags', strtolower($tag));
             }
@@ -92,6 +92,7 @@ class VantageJob extends Model
         foreach ($tags as $tag) {
             $query->whereJsonContains('job_tags', strtolower($tag));
         }
+
         return $query;
     }
 
@@ -100,9 +101,9 @@ class VantageJob extends Model
      */
     public function scopeWithoutTag($query, string $tag)
     {
-        return $query->where(function($q) use ($tag) {
+        return $query->where(function ($q) use ($tag) {
             $q->whereNull('job_tags')
-              ->orWhereJsonDoesntContain('job_tags', strtolower($tag));
+                ->orWhereJsonDoesntContain('job_tags', strtolower($tag));
         });
     }
 
@@ -151,7 +152,7 @@ class VantageJob extends Model
      */
     public function hasTag(string $tag): bool
     {
-        if (!$this->job_tags) {
+        if (! $this->job_tags) {
             return false;
         }
 
@@ -163,15 +164,15 @@ class VantageJob extends Model
      */
     public function getFormattedDurationAttribute(): string
     {
-        if (!$this->duration_ms) {
+        if (! $this->duration_ms) {
             return 'N/A';
         }
 
         if ($this->duration_ms < 1000) {
-            return $this->duration_ms . 'ms';
+            return $this->duration_ms.'ms';
         }
 
-        return round($this->duration_ms / 1000, 2) . 's';
+        return round($this->duration_ms / 1000, 2).'s';
     }
 
     /**
@@ -184,18 +185,18 @@ class VantageJob extends Model
         }
 
         if ($bytes < 1024) {
-            return $bytes . ' B';
+            return $bytes.' B';
         }
 
         if ($bytes < 1024 * 1024) {
-            return round($bytes / 1024, 2) . ' KB';
+            return round($bytes / 1024, 2).' KB';
         }
 
         if ($bytes < 1024 * 1024 * 1024) {
-            return round($bytes / (1024 * 1024), 2) . ' MB';
+            return round($bytes / (1024 * 1024), 2).' MB';
         }
 
-        return round($bytes / (1024 * 1024 * 1024), 2) . ' GB';
+        return round($bytes / (1024 * 1024 * 1024), 2).' GB';
     }
 
     /**
@@ -208,10 +209,10 @@ class VantageJob extends Model
         }
 
         if ($ms < 1000) {
-            return $ms . 'ms';
+            return $ms.'ms';
         }
 
-        return round($ms / 1000, 2) . 's';
+        return round($ms / 1000, 2).'s';
     }
 
     /**
@@ -257,7 +258,8 @@ class VantageJob extends Model
 
         $formatted = $this->formatBytes(abs($this->memory_peak_delta_bytes));
         $sign = $this->memory_peak_delta_bytes >= 0 ? '+' : '-';
-        return $sign . $formatted;
+
+        return $sign.$formatted;
     }
 
     /**
@@ -314,14 +316,14 @@ class VantageJob extends Model
     public function getFormattedMemoryDeltaAttribute(): string
     {
         $delta = $this->memory_delta_bytes;
-        
+
         if ($delta === null) {
             return 'N/A';
         }
 
         $formatted = $this->formatBytes(abs($delta));
         $sign = $delta >= 0 ? '+' : '-';
-        return $sign . $formatted;
+
+        return $sign.$formatted;
     }
 }
-

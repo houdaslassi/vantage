@@ -20,4 +20,3 @@ it('does not log when disabled', function () {
 
     Log::shouldNotHaveReceived('info');
 });
-

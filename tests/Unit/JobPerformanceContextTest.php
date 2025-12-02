@@ -69,4 +69,3 @@ it('overwrites existing baseline for same uuid', function () {
 
     expect($retrieved['cpu_start_user_us'])->toBe(2000);
 });
-

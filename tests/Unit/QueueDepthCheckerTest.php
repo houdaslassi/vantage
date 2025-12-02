@@ -104,4 +104,3 @@ it('falls back to processing jobs when the driver is unsupported', function () {
     expect($depths)->toBe(['reports' => 1])
         ->and(QueueDepthChecker::getTotalQueueDepth())->toBe(1);
 });
-

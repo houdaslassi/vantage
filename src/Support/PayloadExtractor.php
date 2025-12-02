@@ -2,8 +2,6 @@
 
 namespace HoudaSlassi\Vantage\Support;
 
-use HoudaSlassi\Vantage\Support\VantageLogger;
-
 /**
  * Simple Payload Extractor
  *
@@ -18,7 +16,7 @@ class PayloadExtractor
      */
     public static function getPayload($event): ?string
     {
-        if (!config('vantage.store_payload', true)) {
+        if (! config('vantage.store_payload', true)) {
             return null;
         }
 
@@ -64,8 +62,9 @@ class PayloadExtractor
         } catch (\Throwable $e) {
             VantageLogger::error('PayloadExtractor: Failed to extract payload', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
@@ -79,7 +78,7 @@ class PayloadExtractor
             $payload = $event->job->payload();
             $serialized = $payload['data']['command'] ?? null;
 
-            if (!is_string($serialized)) {
+            if (! is_string($serialized)) {
                 return null;
             }
 
@@ -135,7 +134,7 @@ class PayloadExtractor
 
         // Arrays
         if (is_array($value)) {
-            return array_map(fn($item) => self::convertValue($item), $value);
+            return array_map(fn ($item) => self::convertValue($item), $value);
         }
 
         // Eloquent models
@@ -215,7 +214,7 @@ class PayloadExtractor
     protected static function redactSensitive(array $data): array
     {
         $sensitiveKeys = config('vantage.redact_keys', [
-            'password', 'token', 'secret', 'api_key', 'access_token'
+            'password', 'token', 'secret', 'api_key', 'access_token',
         ]);
 
         foreach ($data as $key => &$value) {

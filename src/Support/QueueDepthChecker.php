@@ -3,9 +3,8 @@
 namespace HoudaSlassi\Vantage\Support;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Queue;
-use HoudaSlassi\Vantage\Support\VantageLogger;
+use Illuminate\Support\Facades\Redis;
 
 class QueueDepthChecker
 {
@@ -31,13 +30,14 @@ class QueueDepthChecker
     {
         try {
             $table = config("queue.connections.{$connection}.table", 'jobs');
-            
+
             $query = DB::table($table)
                 ->whereNull('reserved_at')
                 ->where('attempts', 0);
 
             if ($queueName) {
                 $count = $query->where('queue', $queueName)->count();
+
                 return [$queueName ?: 'default' => $count];
             } else {
                 // Get depths for all queues
@@ -55,7 +55,7 @@ class QueueDepthChecker
                         ->whereNull('reserved_at')
                         ->where('attempts', 0)
                         ->count();
-                    
+
                     $depths[$queue ?: 'default'] = $count;
                 }
 
@@ -78,6 +78,7 @@ class QueueDepthChecker
                 'error' => $e->getMessage(),
                 'queue' => $queueName,
             ]);
+
             return [];
         }
     }
@@ -100,19 +101,20 @@ class QueueDepthChecker
                 $queue = $queueName ?: 'default';
                 $key = "{$prefix}queues:{$queue}";
                 $count = $redis->llen($key);
+
                 return [$queue => $count];
             }
 
             // Get depths for all queues by scanning Redis keys
             $queues = [];
             $pattern = "{$prefix}queues:*";
-            
+
             $keys = $redis->keys($pattern);
             foreach ($keys as $key) {
                 // Extract queue name from key (e.g., "queues:default" -> "default")
                 $queueName = str_replace("{$prefix}queues:", '', $key);
                 $count = $redis->llen($key);
-                
+
                 if ($count > 0 || $queueName) {
                     $queues[$queueName ?: 'default'] = $count;
                 }
@@ -133,6 +135,7 @@ class QueueDepthChecker
                 'error' => $e->getMessage(),
                 'queue' => $queueName,
             ]);
+
             return [];
         }
     }
@@ -151,12 +154,13 @@ class QueueDepthChecker
         // Count jobs that are processing or recently started (might be queued)
         try {
             $query = \HoudaSlassi\Vantage\Models\VantageJob::where('status', 'processing');
-            
+
             if ($queueName) {
                 $query->where('queue', $queueName);
             }
 
             $count = $query->count();
+
             return [$queueName ?: 'default' => $count];
         } catch (\Throwable $e) {
             return [];
@@ -169,6 +173,7 @@ class QueueDepthChecker
     public static function getTotalQueueDepth(): int
     {
         $depths = self::getQueueDepth();
+
         return array_sum($depths);
     }
 
@@ -217,23 +222,22 @@ class QueueDepthChecker
     public static function getQueueDepthWithMetadataAlways(?string $queueName = null): array
     {
         $depths = self::getQueueDepthWithMetadata($queueName);
-        
+
         // If empty, show at least the default queue with 0 depth
         if (empty($depths)) {
             $connection = config('queue.default');
             $driver = config("queue.connections.{$connection}.driver", 'sync');
-            
+
             return [
                 'default' => [
                     'depth' => 0,
                     'driver' => $driver,
                     'connection' => $connection,
                     'status' => 'healthy',
-                ]
+                ],
             ];
         }
-        
+
         return $depths;
     }
 }
-

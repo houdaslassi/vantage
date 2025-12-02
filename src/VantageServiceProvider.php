@@ -2,13 +2,12 @@
 
 namespace HoudaSlassi\Vantage;
 
-use HoudaSlassi\Vantage\Console\Commands\RetryFailedJob;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class VantageServiceProvider extends ServiceProvider
 {
@@ -26,7 +25,7 @@ class VantageServiceProvider extends ServiceProvider
         ], 'vantage-config');
 
         // Master switch: if package is disabled, don't register anything
-        if (!config('vantage.enabled', true)) {
+        if (! config('vantage.enabled', true)) {
             return;
         }
 
@@ -35,20 +34,20 @@ class VantageServiceProvider extends ServiceProvider
                 Console\Commands\RetryFailedJob::class,
                 Console\Commands\CleanupStuckJobs::class,
                 Console\Commands\PruneOldJobs::class,
-                //Console\Commands\ListJobs::class,
-                //Console\Commands\TagStats::class,
+                // Console\Commands\ListJobs::class,
+                // Console\Commands\TagStats::class,
             ]);
         }
 
         // Register authorization gate (like Horizon)
         Gate::define('viewVantage', function ($user = null) {
             // If auth is disabled, allow access
-            if (!config('vantage.auth.enabled', true)) {
+            if (! config('vantage.auth.enabled', true)) {
                 return true;
             }
 
             // If no user, deny access
-            if (!$user) {
+            if (! $user) {
                 return false;
             }
 
@@ -70,7 +69,7 @@ class VantageServiceProvider extends ServiceProvider
 
         // Listen to Laravel's built-in queue events
         Event::listen(JobProcessing::class, [Listeners\RecordJobStart::class, 'handle']);
-        Event::listen(JobProcessed::class,  [Listeners\RecordJobSuccess::class, 'handle']);
-        Event::listen(JobFailed::class,     [Listeners\RecordJobFailure::class, 'handle']);
+        Event::listen(JobProcessed::class, [Listeners\RecordJobSuccess::class, 'handle']);
+        Event::listen(JobFailed::class, [Listeners\RecordJobFailure::class, 'handle']);
     }
 }

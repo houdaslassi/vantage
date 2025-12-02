@@ -9,10 +9,9 @@ namespace HoudaSlassi\Vantage\Support;
  */
 class TagExtractor
 {
-
     public static function extract($event): ?array
     {
-        if (!config('vantage.tagging.enabled', true)) {
+        if (! config('vantage.tagging.enabled', true)) {
             return null;
         }
 
@@ -48,7 +47,7 @@ class TagExtractor
             $payload = $event->job->payload();
             $serialized = $payload['data']['command'] ?? null;
 
-            if (!is_string($serialized)) {
+            if (! is_string($serialized)) {
                 return null;
             }
 
@@ -69,17 +68,17 @@ class TagExtractor
 
         // Queue name (enabled by default)
         if (config('vantage.tagging.auto_tags.queue_name', true)) {
-            $tags[] = 'queue:' . $event->job->getQueue();
+            $tags[] = 'queue:'.$event->job->getQueue();
         }
 
         // Environment (disabled by default)
         if (config('vantage.tagging.auto_tags.environment', false)) {
-            $tags[] = 'env:' . app()->environment();
+            $tags[] = 'env:'.app()->environment();
         }
 
         // Hour (disabled by default)
         if (config('vantage.tagging.auto_tags.hour', false)) {
-            $tags[] = 'hour:' . now()->format('H');
+            $tags[] = 'hour:'.now()->format('H');
         }
 
         return $tags;
@@ -96,9 +95,9 @@ class TagExtractor
      */
     protected static function cleanTags(array $tags): ?array
     {
-        $tags = array_filter($tags, fn($tag) => !empty($tag));
+        $tags = array_filter($tags, fn ($tag) => ! empty($tag));
 
-        $tags = array_map(fn($tag) => strtolower(trim($tag)), $tags);
+        $tags = array_map(fn ($tag) => strtolower(trim($tag)), $tags);
 
         $tags = array_unique($tags);
 
@@ -111,7 +110,6 @@ class TagExtractor
             $tags = array_slice($tags, 0, $maxTags);
         }
 
-        return !empty($tags) ? $tags : null;
+        return ! empty($tags) ? $tags : null;
     }
 }
-

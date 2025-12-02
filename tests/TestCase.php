@@ -48,4 +48,3 @@ abstract class TestCase extends Orchestra
         $app['config']->set('vantage.auth.enabled', false);
     }
 }
-

@@ -2,8 +2,8 @@
 
 namespace HoudaSlassi\Vantage\Console\Commands;
 
-use Illuminate\Console\Command;
 use HoudaSlassi\Vantage\Models\VantageJob;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class PruneOldJobs extends Command
@@ -15,9 +15,9 @@ class PruneOldJobs extends Command
                             {--keep-processing : Always keep jobs with "processing" status}
                             {--dry-run : Show what would be deleted without actually deleting}
                             {--force : Skip confirmation prompt}';
-    
+
     protected $description = 'Prune old job records from the database to free up space';
-    
+
     public function handle(): int
     {
         // Get default days from config, fallback to 30
@@ -39,7 +39,7 @@ class PruneOldJobs extends Command
             $cutoff = now()->subDays($days);
             $period = "{$days} days";
             if ($usingConfig) {
-                $period .= " (from config: vantage.retention_days)";
+                $period .= ' (from config: vantage.retention_days)';
             }
         }
 
@@ -50,7 +50,7 @@ class PruneOldJobs extends Command
         }
 
         // Always keep processing jobs unless explicitly included
-        if ($keepProcessing || (!$statusFilter && !$keepProcessing)) {
+        if ($keepProcessing || (! $statusFilter && ! $keepProcessing)) {
             $query->where('status', '!=', 'processing');
         }
 
@@ -59,50 +59,53 @@ class PruneOldJobs extends Command
 
         if ($count === 0) {
             $this->info("No jobs found older than {$period} to prune.");
+
             return self::SUCCESS;
         }
 
         // Show summary
         $this->info("Found {$count} job(s) older than {$period} to prune.");
-        
+
         if ($statusFilter) {
             $this->line("Status filter: {$statusFilter}");
         }
-        
+
         if ($keepProcessing) {
             $this->line("Keeping all 'processing' jobs regardless of age.");
         }
 
         // Show breakdown by status
         $breakdown = VantageJob::where('created_at', '<', $cutoff)
-            ->when($statusFilter, fn($q) => $q->where('status', $statusFilter))
-            ->when($keepProcessing || (!$statusFilter && !$keepProcessing), fn($q) => $q->where('status', '!=', 'processing'))
+            ->when($statusFilter, fn ($q) => $q->where('status', $statusFilter))
+            ->when($keepProcessing || (! $statusFilter && ! $keepProcessing), fn ($q) => $q->where('status', '!=', 'processing'))
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        if (!empty($breakdown)) {
+        if (! empty($breakdown)) {
             $this->table(
                 ['Status', 'Count'],
-                collect($breakdown)->map(fn($count, $status) => [$status, number_format($count)])
+                collect($breakdown)->map(fn ($count, $status) => [$status, number_format($count)])
             );
         }
 
         // Dry run mode
         if ($dryRun) {
             $this->warn("\n[DRY RUN] No changes made. Run without --dry-run to delete these records.");
+
             return self::SUCCESS;
         }
 
         // Confirmation
-        if (!$force && !$this->confirm("Are you sure you want to delete {$count} job record(s)?", true)) {
+        if (! $force && ! $this->confirm("Are you sure you want to delete {$count} job record(s)?", true)) {
             $this->info('Pruning cancelled.');
+
             return self::SUCCESS;
         }
 
         // Delete in chunks to avoid memory issues
-        $this->info("Deleting records...");
+        $this->info('Deleting records...');
         $deleted = 0;
         $chunkSize = 1000;
 
@@ -111,18 +114,18 @@ class PruneOldJobs extends Command
             // Handle retry chain relationships
             // First, nullify retried_from_id for children of jobs we're about to delete
             $parentIds = $jobs->pluck('id')->toArray();
-            
-            if (!empty($parentIds)) {
+
+            if (! empty($parentIds)) {
                 // Find children that reference these parents
                 $childrenCount = VantageJob::whereIn('retried_from_id', $parentIds)->count();
-                
+
                 if ($childrenCount > 0) {
                     // Option 1: Delete children too (cascade)
                     // Option 2: Nullify the relationship (orphan the children)
                     // We'll nullify to preserve retry history of remaining jobs
                     VantageJob::whereIn('retried_from_id', $parentIds)
                         ->update(['retried_from_id' => null]);
-                    
+
                     $this->line("  → Orphaned {$childrenCount} retry child record(s)");
                 }
             }
@@ -130,7 +133,7 @@ class PruneOldJobs extends Command
             // Delete the jobs
             $chunkDeleted = VantageJob::whereIn('id', $parentIds)->delete();
             $deleted += $chunkDeleted;
-            
+
             $this->line("  → Deleted {$chunkDeleted} record(s) (total: {$deleted})");
         });
 
@@ -138,9 +141,8 @@ class PruneOldJobs extends Command
 
         // Show remaining stats
         $remaining = VantageJob::count();
-        $this->line("Remaining jobs in database: " . number_format($remaining));
+        $this->line('Remaining jobs in database: '.number_format($remaining));
 
         return self::SUCCESS;
     }
 }
-
