@@ -60,7 +60,7 @@ class VantageServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         // Load views
-        $this->loadViewsFrom(__DIR__.'/../resources/vantage-views', 'vantage');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'vantage');
 
         // Load routes if enabled
         if (config('vantage.routes', true)) {
