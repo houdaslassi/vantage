@@ -514,21 +514,21 @@ parameters:
 			path: src/Vantage.php
 
 		-
-			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$payload\.$#'
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$job_class\.$#'
 			identifier: property.notFound
 			count: 1
+			path: src/Vantage.php
+
+		-
+			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$payload\.$#'
+			identifier: property.notFound
+			count: 2
 			path: src/Vantage.php
 
 		-
 			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$processed\.$#'
 			identifier: property.notFound
 			count: 2
-			path: src/Vantage.php
-
-		-
-			message: '#^Access to an undefined property HoudaSlassi\\Vantage\\Models\\VantageJob\:\:\$queue\.$#'
-			identifier: property.notFound
-			count: 1
 			path: src/Vantage.php
 
 		-
@@ -548,3 +548,15 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: src/Vantage.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 5
+			path: src/Http/Controllers/QueueMonitorController.php
+
+		-
+			message: '#^Call to function is_string\(\) with class-string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Http/Controllers/QueueMonitorController.php

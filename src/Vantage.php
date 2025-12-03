@@ -112,7 +112,6 @@ class Vantage
         }
 
         // Try to restore job from payload with safety checks
-        /** @var string $expectedJobClass */
         $command = $this->restoreJobFromPayload($job, $expectedJobClass);
 
         if (! $command) {

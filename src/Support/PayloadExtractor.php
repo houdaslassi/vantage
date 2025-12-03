@@ -100,8 +100,7 @@ class PayloadExtractor
             // Security validation: ensure it's a valid job class
             // This prevents unserializing arbitrary classes even if they got into the queue
             if (! ($command instanceof ShouldQueue) &&
-                ! ($command instanceof Job) &&
-                ! is_subclass_of($command, ShouldQueue::class)) {
+                ! ($command instanceof Job)) {
                 return null;
             }
 
