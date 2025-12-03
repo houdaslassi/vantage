@@ -15,8 +15,8 @@ class CleanupStuckJobs extends Command
 
     public function handle(): int
     {
-        $timeoutHours = $this->option('timeout');
-        $dryRun = $this->option('dry-run');
+        $timeoutHours = (int) $this->option('timeout');
+        $dryRun = (bool) $this->option('dry-run');
 
         $cutoff = now()->subHours($timeoutHours);
 

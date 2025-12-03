@@ -26,13 +26,14 @@
         "illuminate/notifications": "^10.0|^11.0|^12.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.14",
         "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.14",
         "orchestra/testbench": "^10.0|^9.0|^8.0",
         "pestphp/pest": "^3.8",
         "pestphp/pest-plugin-arch": "^3.0",
         "pestphp/pest-plugin-laravel": "^3.0",
         "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-phpunit": "^2.0"
     },
