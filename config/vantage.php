@@ -38,7 +38,7 @@ return [
     'redact_keys' => [
         'password', 'token', 'authorization', 'secret', 'api_key',
         'apikey', 'access_token', 'refresh_token', 'private_key',
-        'card_number', 'cvv', 'ssn', 'credit_card'
+        'card_number', 'cvv', 'ssn', 'credit_card',
     ],
 
     /*

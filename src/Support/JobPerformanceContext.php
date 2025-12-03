@@ -26,6 +26,3 @@ class JobPerformanceContext
         unset(self::$baselines[$uuid]);
     }
 }
-
-
-

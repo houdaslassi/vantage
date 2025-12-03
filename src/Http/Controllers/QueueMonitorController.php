@@ -5,10 +5,11 @@ namespace HoudaSlassi\Vantage\Http\Controllers;
 use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\QueueDepthChecker;
 use HoudaSlassi\Vantage\Support\VantageLogger;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Jobs\Job;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class QueueMonitorController extends Controller
@@ -42,12 +43,12 @@ class QueueMonitorController extends Controller
 
         // Recent jobs - exclude large payload and stack columns
         $recentJobs = VantageJob::select([
-                'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
-                'status', 'started_at', 'finished_at', 'duration_ms',
-                'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
-                'created_at', 'updated_at'
-                // Exclude: payload, stack (large text fields)
-            ])
+            'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
+            'status', 'started_at', 'finished_at', 'duration_ms',
+            'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
+            'created_at', 'updated_at',
+            // Exclude: payload, stack (large text fields)
+        ])
             ->latest('id')
             ->limit(20)
             ->get();
@@ -64,7 +65,7 @@ class QueueMonitorController extends Controller
         $connectionName = (new VantageJob)->getConnectionName();
         $connection = DB::connection($connectionName);
         $driver = $connection->getDriverName();
-        
+
         if ($driver === 'mysql') {
             $dateFormat = DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour');
         } elseif ($driver === 'sqlite') {
@@ -75,12 +76,12 @@ class QueueMonitorController extends Controller
             // Fallback for other databases
             $dateFormat = DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00:00") as hour');
         }
-        
+
         $jobsByHour = VantageJob::select(
-                $dateFormat,
-                DB::raw('count(*) as count'),
-                DB::raw("sum(case when status = 'failed' then 1 else 0 end) as failed_count")
-            )
+            $dateFormat,
+            DB::raw('count(*) as count'),
+            DB::raw("sum(case when status = 'failed' then 1 else 0 end) as failed_count")
+        )
             ->where('created_at', '>', $since)
             ->groupBy('hour')
             ->orderBy('hour')
@@ -162,7 +163,7 @@ class QueueMonitorController extends Controller
                     'driver' => config('queue.default', 'unknown'),
                     'connection' => config('queue.default', 'unknown'),
                     'status' => 'healthy',
-                ]
+                ],
             ];
         }
 
@@ -206,16 +207,16 @@ class QueueMonitorController extends Controller
 
         // Top CPU-consuming jobs
         $topCpuJobs = VantageJob::select(
-                'job_class',
-                DB::raw('AVG(cpu_user_ms) as avg_cpu_user'),
-                DB::raw('AVG(cpu_sys_ms) as avg_cpu_sys'),
-                DB::raw('AVG(COALESCE(cpu_user_ms, 0) + COALESCE(cpu_sys_ms, 0)) as avg_cpu_total'),
-                DB::raw('count(*) as count')
-            )
+            'job_class',
+            DB::raw('AVG(cpu_user_ms) as avg_cpu_user'),
+            DB::raw('AVG(cpu_sys_ms) as avg_cpu_sys'),
+            DB::raw('AVG(COALESCE(cpu_user_ms, 0) + COALESCE(cpu_sys_ms, 0)) as avg_cpu_total'),
+            DB::raw('count(*) as count')
+        )
             ->where('created_at', '>', $since)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNotNull('cpu_user_ms')
-                      ->orWhereNotNull('cpu_sys_ms');
+                    ->orWhereNotNull('cpu_sys_ms');
             })
             ->groupBy('job_class')
             ->orderByDesc('avg_cpu_total')
@@ -247,14 +248,14 @@ class QueueMonitorController extends Controller
     {
         // Exclude large columns (payload, stack) from jobs list to improve performance
         $query = VantageJob::select([
-            'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
+            'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
             'status', 'started_at', 'finished_at', 'duration_ms',
             'exception_class', 'exception_message', 'job_tags', 'retried_from_id',
             'created_at', 'updated_at',
             // Performance telemetry fields
             'memory_start_bytes', 'memory_end_bytes', 'memory_peak_start_bytes',
             'memory_peak_end_bytes', 'memory_peak_delta_bytes',
-            'cpu_user_ms', 'cpu_sys_ms'
+            'cpu_user_ms', 'cpu_sys_ms',
             // Exclude: payload, stack (large text fields not needed for list view)
         ]);
 
@@ -264,7 +265,7 @@ class QueueMonitorController extends Controller
         }
 
         if ($request->filled('job_class')) {
-            $query->where('job_class', 'like', '%' . $request->job_class . '%');
+            $query->where('job_class', 'like', '%'.$request->job_class.'%');
         }
 
         if ($request->filled('queue')) {
@@ -273,15 +274,15 @@ class QueueMonitorController extends Controller
 
         // Advanced tag filtering
         $tagsParam = $request->get('tags');
-        
+
         // Check if tags parameter exists and is not empty
-        if (!empty($tagsParam) && trim($tagsParam) !== '') {
+        if (! empty($tagsParam) && trim($tagsParam) !== '') {
             $tags = is_array($tagsParam) ? $tagsParam : explode(',', $tagsParam);
             $tags = array_map('trim', $tags);
             $tags = array_map('strtolower', $tags);
             $tags = array_filter($tags); // Remove empty tags
 
-            if (!empty($tags)) {
+            if (! empty($tags)) {
                 // Get database driver for database-specific JSON queries
                 $connectionName = (new VantageJob)->getConnectionName();
                 $connection = DB::connection($connectionName);
@@ -289,14 +290,14 @@ class QueueMonitorController extends Controller
 
                 if ($request->filled('tag_mode') && $request->tag_mode === 'any') {
                     // Jobs that have ANY of the specified tags
-                    $query->where(function($q) use ($tags, $driver) {
+                    $query->where(function ($q) use ($tags, $driver) {
                         foreach ($tags as $tag) {
                             if ($driver === 'sqlite') {
                                 // SQLite: json_each().value returns the actual string, not JSON-encoded
-                                $q->orWhereRaw("EXISTS (
+                                $q->orWhereRaw('EXISTS (
                                     SELECT 1 FROM json_each(vantage_jobs.job_tags) 
                                     WHERE json_each.value = ?
-                                )", [$tag]);
+                                )', [$tag]);
                             } else {
                                 // MySQL and PostgreSQL support whereJsonContains
                                 $q->orWhereJsonContains('job_tags', $tag);
@@ -309,10 +310,10 @@ class QueueMonitorController extends Controller
                         if ($driver === 'sqlite') {
                             // SQLite: json_each().value returns the actual string, not JSON-encoded
                             // So we compare directly to the tag value
-                            $query->whereRaw("EXISTS (
+                            $query->whereRaw('EXISTS (
                                 SELECT 1 FROM json_each(vantage_jobs.job_tags) 
                                 WHERE json_each.value = ?
-                            )", [$tag]);
+                            )', [$tag]);
                         } else {
                             // MySQL and PostgreSQL
                             $query->whereJsonContains('job_tags', $tag);
@@ -329,10 +330,10 @@ class QueueMonitorController extends Controller
 
             if ($driver === 'sqlite') {
                 // SQLite: json_each().value returns the actual string, not JSON-encoded
-                $query->whereRaw("EXISTS (
+                $query->whereRaw('EXISTS (
                     SELECT 1 FROM json_each(vantage_jobs.job_tags) 
                     WHERE json_each.value = ?
-                )", [$tag]);
+                )', [$tag]);
             } else {
                 $query->whereJsonContains('job_tags', $tag);
             }
@@ -357,8 +358,8 @@ class QueueMonitorController extends Controller
             ->filter()
             ->sort()
             ->values();
-        
-        $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn($c) => class_basename($c))->filter();
+
+        $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn ($c) => class_basename($c))->filter();
 
         // Get all available tags with counts - only select needed columns
         $allTags = VantageJob::select(['job_tags', 'status'])
@@ -422,7 +423,7 @@ class QueueMonitorController extends Controller
         $tagStats = [];
         foreach ($jobs as $job) {
             foreach ($job->job_tags ?? [] as $tag) {
-                if (!isset($tagStats[$tag])) {
+                if (! isset($tagStats[$tag])) {
                     $tagStats[$tag] = [
                         'total' => 0,
                         'processed' => 0,
@@ -443,7 +444,7 @@ class QueueMonitorController extends Controller
 
         // Calculate averages and success rates
         foreach ($tagStats as $tag => &$stats) {
-            $stats['avg_duration'] = !empty($stats['durations'])
+            $stats['avg_duration'] = ! empty($stats['durations'])
                 ? round(array_sum($stats['durations']) / count($stats['durations']), 2)
                 : 0;
 
@@ -455,7 +456,7 @@ class QueueMonitorController extends Controller
         }
 
         // Sort by total count
-        uasort($tagStats, fn($a, $b) => $b['total'] <=> $a['total']);
+        uasort($tagStats, fn ($a, $b) => $b['total'] <=> $a['total']);
 
         return view('vantage::tags', compact('tagStats', 'period'));
     }
@@ -468,12 +469,12 @@ class QueueMonitorController extends Controller
         // Exclude large columns (payload) from failed jobs list
         // Keep stack for debugging, but exclude payload
         $jobs = VantageJob::select([
-                'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt', 
-                'status', 'started_at', 'finished_at', 'duration_ms',
-                'exception_class', 'exception_message', 'stack', 'job_tags', 
-                'retried_from_id', 'created_at', 'updated_at'
-                // Exclude: payload (very large, not needed for failed list)
-            ])
+            'id', 'uuid', 'job_class', 'queue', 'connection', 'attempt',
+            'status', 'started_at', 'finished_at', 'duration_ms',
+            'exception_class', 'exception_message', 'stack', 'job_tags',
+            'retried_from_id', 'created_at', 'updated_at',
+            // Exclude: payload (very large, not needed for failed list)
+        ])
             ->where('status', 'failed')
             ->latest('id')
             ->paginate(50);
@@ -494,15 +495,22 @@ class QueueMonitorController extends Controller
 
         $jobClass = $run->job_class;
 
-        if (!class_exists($jobClass)) {
+        if (! class_exists($jobClass)) {
             return back()->with('error', "Job class {$jobClass} not found.");
         }
 
         try {
-            // Simple: Just unserialize the original job from Laravel's payload
-            $job = $this->restoreJobFromPayload($run);
+            // Validate it's a valid job class before attempting to restore
+            if (! is_string($jobClass) ||
+                (! is_subclass_of($jobClass, ShouldQueue::class) &&
+                 ! is_subclass_of($jobClass, Job::class))) {
+                return back()->with('error', "Invalid job class: {$jobClass}");
+            }
 
-            if (!$job) {
+            // Safely restore job from payload with security checks
+            $job = $this->restoreJobFromPayload($run, $jobClass);
+
+            if (! $job) {
                 return back()->with('error', 'Unable to restore job. Payload might be missing or corrupted.');
             }
 
@@ -514,58 +522,100 @@ class QueueMonitorController extends Controller
                 ->onQueue($run->queue ?? 'default')
                 ->onConnection($run->connection ?? config('queue.default'));
 
-        return back()->with('success', 'Job queued for retry!');
+            return back()->with('success', 'Job queued for retry!');
 
         } catch (\Throwable $e) {
-                VantageLogger::error('Vantage: Retry failed', [
+            VantageLogger::error('Vantage: Retry failed', [
                 'job_id' => $id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', "Retry failed: " . $e->getMessage());
+            return back()->with('error', 'Retry failed: '.$e->getMessage());
         }
     }
 
     /**
-     * Restore job from the original Laravel serialized payload
-     * This is the simplest and most accurate method
+     * Safely restore job from payload with security checks.
+     *
+     * @param  VantageJob  $run  The job run record
+     * @param  string  $expectedJobClass  The expected job class name for validation
+     * @return object|null The restored job object or null on failure
      */
-    protected function restoreJobFromPayload(VantageJob $run): ?object
+    protected function restoreJobFromPayload(VantageJob $run, string $expectedJobClass): ?object
     {
-        if (!$run->payload) {
+        if (! $run->payload) {
+            return null;
+        }
+
+        // Validate expected class exists and is a valid job class
+        if (! class_exists($expectedJobClass)) {
+            VantageLogger::warning('Vantage: Expected job class does not exist', [
+                'run_id' => $run->id,
+                'expected_class' => $expectedJobClass,
+            ]);
+
             return null;
         }
 
         try {
-            $payload = json_decode($run->payload, true);
+            $payload = is_array($run->payload) ? $run->payload : json_decode($run->payload, true);
+
+            if (! is_array($payload)) {
+                VantageLogger::warning('Vantage: Invalid payload format', ['run_id' => $run->id]);
+
+                return null;
+            }
 
             // Get the serialized command from Laravel's raw payload
             $serialized = $payload['raw_payload']['data']['command'] ?? null;
 
-            if (!$serialized) {
+            // Fallback to old format if new format not available
+            if (! $serialized) {
+                $serialized = $payload['data']['command'] ?? null;
+            }
+
+            if (! $serialized || ! is_string($serialized)) {
                 VantageLogger::warning('Vantage: No serialized command in payload', ['run_id' => $run->id]);
+
                 return null;
             }
 
-            // Unserialize it - Laravel stored it this way originally
-            $job = unserialize($serialized, ['allowed_classes' => true]);
+            // Unserialize with security: only allow the expected job class
+            $job = @unserialize($serialized, ['allowed_classes' => [$expectedJobClass]]);
 
-            if (!is_object($job)) {
+            if (! is_object($job)) {
                 VantageLogger::warning('Vantage: Unserialize did not return object', [
                     'run_id' => $run->id,
-                    'result_type' => gettype($job)
+                    'result_type' => gettype($job),
                 ]);
+
+                return null;
+            }
+
+            // Double-check the class matches the expected class (security validation)
+            if (! $job instanceof $expectedJobClass) {
+                VantageLogger::warning('Vantage: Unserialized job class does not match expected class', [
+                    'run_id' => $run->id,
+                    'expected_class' => $expectedJobClass,
+                    'actual_class' => get_class($job),
+                ]);
+
                 return null;
             }
 
             VantageLogger::info('Vantage: Successfully restored job', [
                 'run_id' => $run->id,
-                'job_class' => get_class($job)
+                'job_class' => get_class($job),
             ]);
 
             return $job;
 
         } catch (\Throwable $e) {
+            VantageLogger::error('Vantage: Exception while restoring job from payload', [
+                'run_id' => $run->id,
+                'error' => $e->getMessage(),
+            ]);
+
             return null;
         }
     }
@@ -591,7 +641,7 @@ class QueueMonitorController extends Controller
      */
     protected function getSinceDate($period)
     {
-        return match($period) {
+        return match ($period) {
             '1h' => now()->subHour(),
             '6h' => now()->subHours(6),
             '24h' => now()->subDay(),
@@ -602,4 +652,3 @@ class QueueMonitorController extends Controller
         };
     }
 }
-

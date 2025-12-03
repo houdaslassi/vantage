@@ -2,13 +2,14 @@
 
 namespace HoudaSlassi\Vantage\Console\Commands;
 
-use Illuminate\Console\Command;
 use HoudaSlassi\Vantage\Models\VantageJob;
+use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
 class RetryFailedJob extends Command
 {
     protected $signature = 'vantage:retry {run_id} {--force : Retry even if payload is not available}';
+
     protected $description = 'Retry a failed job run by ID using stored payload';
 
     public function handle(): int
@@ -17,6 +18,7 @@ class RetryFailedJob extends Command
 
         if (! $run || $run->status !== 'failed') {
             $this->error('Job run not found or not failed.');
+
             return self::FAILURE;
         }
 
@@ -24,20 +26,22 @@ class RetryFailedJob extends Command
 
         if (! class_exists($jobClass)) {
             $this->error("Job class {$jobClass} not found.");
+
             return self::FAILURE;
         }
 
         // Try to restore job from payload
         $job = $this->restoreJobFromPayload($run);
-        
-        if (!$job) {
-            if (!$this->option('force')) {
+
+        if (! $job) {
+            if (! $this->option('force')) {
                 $this->warn("No payload available for job #{$run->id}. Use --force to retry with empty constructor.");
+
                 return self::FAILURE;
             }
-            
-            $this->warn("Creating job with empty constructor (--force)");
-            $job = new $jobClass();
+
+            $this->warn('Creating job with empty constructor (--force)');
+            $job = new $jobClass;
         }
 
         $job->queueMonitorRetryOf = $run->id;
@@ -47,13 +51,13 @@ class RetryFailedJob extends Command
             ->onConnection($run->connection ?? config('queue.default'));
 
         $this->info("Retried job {$jobClass} from run #{$run->id}");
-        
+
         if ($run->job_tags) {
-            $this->line("Tags: " . implode(', ', $run->job_tags));
+            $this->line('Tags: '.implode(', ', $run->job_tags));
         }
-        
+
         if ($run->exception_message) {
-            $this->line("Original failure: " . Str::limit($run->exception_message, 100));
+            $this->line('Original failure: '.Str::limit($run->exception_message, 100));
         }
 
         return self::SUCCESS;
@@ -64,22 +68,23 @@ class RetryFailedJob extends Command
      */
     protected function restoreJobFromPayload(VantageJob $run): ?object
     {
-        if (!$run->payload) {
+        if (! $run->payload) {
             return null;
         }
 
         try {
             $payload = json_decode($run->payload, true);
-            
-            if (!$payload) {
+
+            if (! $payload) {
                 return null;
             }
 
             $jobClass = $run->job_class;
-            
+
             return $this->recreateJobWithReflection($jobClass, $payload);
         } catch (\Throwable $e) {
-            $this->error("Failed to restore job from payload: " . $e->getMessage());
+            $this->error('Failed to restore job from payload: '.$e->getMessage());
+
             return null;
         }
     }
@@ -92,9 +97,9 @@ class RetryFailedJob extends Command
         try {
             $reflection = new \ReflectionClass($jobClass);
             $constructor = $reflection->getConstructor();
-            
-            if (!$constructor) {
-                return new $jobClass();
+
+            if (! $constructor) {
+                return new $jobClass;
             }
 
             $params = $constructor->getParameters();
@@ -102,7 +107,7 @@ class RetryFailedJob extends Command
 
             foreach ($params as $param) {
                 $paramName = $param->getName();
-                
+
                 if (isset($payload[$paramName])) {
                     $args[] = $this->unserializeValue($payload[$paramName]);
                 } elseif ($param->isDefaultValueAvailable()) {
@@ -114,7 +119,8 @@ class RetryFailedJob extends Command
 
             return $reflection->newInstanceArgs($args);
         } catch (\Throwable $e) {
-            $this->error("Failed to recreate job with reflection: " . $e->getMessage());
+            $this->error('Failed to recreate job with reflection: '.$e->getMessage());
+
             return null;
         }
     }

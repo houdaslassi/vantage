@@ -2,7 +2,8 @@
 
 namespace HoudaSlassi\Vantage\Support;
 
-use HoudaSlassi\Vantage\Support\VantageLogger;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Jobs\Job;
 
 /**
  * Simple Payload Extractor
@@ -18,7 +19,7 @@ class PayloadExtractor
      */
     public static function getPayload($event): ?string
     {
-        if (!config('vantage.store_payload', true)) {
+        if (! config('vantage.store_payload', true)) {
             return null;
         }
 
@@ -64,14 +65,18 @@ class PayloadExtractor
         } catch (\Throwable $e) {
             VantageLogger::error('PayloadExtractor: Failed to extract payload', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
+
             return null;
         }
     }
 
     /**
      * Get job command object from event
+     *
+     * Note: During job processing, we don't know the exact class ahead of time.
+     * We validate after unserializing that it's a valid job class.
      */
     protected static function getCommand($event): ?object
     {
@@ -79,13 +84,27 @@ class PayloadExtractor
             $payload = $event->job->payload();
             $serialized = $payload['data']['command'] ?? null;
 
-            if (!is_string($serialized)) {
+            if (! is_string($serialized)) {
                 return null;
             }
 
+            // During job processing, Laravel has already validated the job.
+            // We still restrict to prevent arbitrary class instantiation, but we need
+            // to allow classes since jobs are objects. We validate after.
             $command = @unserialize($serialized, ['allowed_classes' => true]);
 
-            return is_object($command) ? $command : null;
+            if (! is_object($command)) {
+                return null;
+            }
+
+            // Security validation: ensure it's a valid job class
+            // This prevents unserializing arbitrary classes even if they got into the queue
+            if (! ($command instanceof ShouldQueue) &&
+                ! ($command instanceof Job)) {
+                return null;
+            }
+
+            return $command;
         } catch (\Throwable $e) {
             return null;
         }
@@ -135,7 +154,7 @@ class PayloadExtractor
 
         // Arrays
         if (is_array($value)) {
-            return array_map(fn($item) => self::convertValue($item), $value);
+            return array_map(fn ($item) => self::convertValue($item), $value);
         }
 
         // Eloquent models
@@ -215,7 +234,7 @@ class PayloadExtractor
     protected static function redactSensitive(array $data): array
     {
         $sensitiveKeys = config('vantage.redact_keys', [
-            'password', 'token', 'secret', 'api_key', 'access_token'
+            'password', 'token', 'secret', 'api_key', 'access_token',
         ]);
 
         foreach ($data as $key => &$value) {

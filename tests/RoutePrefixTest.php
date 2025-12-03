@@ -5,4 +5,3 @@ it('respects custom route prefix', function () {
         ->assertStatus(200)
         ->assertSee('Dashboard');
 });
-

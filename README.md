@@ -1,5 +1,11 @@
 # Vantage
 
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/houdaslassi/vantage.svg?style=flat-square)](https://packagist.org/packages/houdaslassi/vantage)
+[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/houdaslassi/vantage/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/houdaslassi/vantage/actions?query=workflow%3Arun-tests+branch%3Amain)
+[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/houdaslassi/vantage/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/houdaslassi/vantage/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
+[![Total Downloads](https://img.shields.io/packagist/dt/houdaslassi/vantage.svg?style=flat-square)](https://packagist.org/packages/houdaslassi/vantage)
+[![License](https://img.shields.io/packagist/l/houdaslassi/vantage.svg?style=flat-square)](https://packagist.org/packages/houdaslassi/vantage)
+
 A Laravel package that tracks and monitors your queue jobs. 
 Automatically records job execution history, failures, retries, 
 and provides a simple web interface to view everything.
@@ -12,12 +18,17 @@ php artisan vendor:publish --tag=vantage-config
 php artisan migrate
 ```
 
-The package will automatically register itself. Publish the config file to customize settings.
+The package will automatically register itself using
+
+**Publishing Assets:**
+- Config: `php artisan vendor:publish --tag=vantage-config`
+- Views: `php artisan vendor:publish --tag=vantage-views` (optional, for customization)
+- Migrations: Automatically loaded, but you can publish with `php artisan vendor:publish --tag=vantage-migrations` if needed
 
 ### Requirements
 
-- Laravel 10.x or 11.x
-- PHP 8.1 or higher
+- Laravel 10.x, 11.x, or 12.x
+- PHP 8.2, 8.3, or 8.4
 - One of the following databases:
   - MySQL 5.7+ / MariaDB 10.3+
   - PostgreSQL 9.6+
@@ -114,6 +125,54 @@ php artisan vantage:retry {job_id}
 Or use the web interface - just click retry on any failed job.
 
 ![Retry Jobs](screenshots/vantage_09.png)
+
+### Programmatic Access
+
+Vantage provides a convenient facade for easy programmatic access to queue monitoring data. The facade is automatically registered and ready to use:
+
+```php
+use HoudaSlassi\Vantage\Facades\Vantage;
+
+// Get queue depth for all queues
+$depths = Vantage::queueDepth();
+
+// Get failed jobs
+$failedJobs = Vantage::failedJobs(limit: 100);
+
+// Get jobs by tag
+$emailJobs = Vantage::jobsByTag('email', limit: 50);
+
+// Get statistics
+$stats = Vantage::statistics(startDate: now()->subDays(7));
+// Returns: ['total' => 1000, 'processed' => 950, 'failed' => 50, 'processing' => 0, 'success_rate' => 95.0]
+
+// Retry a failed job programmatically
+Vantage::retryJob($jobId);
+
+// Clean up stuck jobs older than 24 hours
+$cleaned = Vantage::cleanupStuckJobs(hoursOld: 24);
+
+// Prune old jobs
+$deleted = Vantage::pruneOldJobs(daysOld: 30);
+
+// Check if Vantage is enabled
+if (Vantage::enabled()) {
+    // Monitor critical jobs
+}
+```
+
+**Available Facade Methods:**
+- `queueDepth(?string $queue = null)` - Get queue depths for all or specific queues
+- `jobsByStatus(string $status, int $limit = 50)` - Get jobs by status (processing, processed, failed)
+- `failedJobs(int $limit = 50)` - Get failed jobs
+- `processingJobs(int $limit = 50)` - Get currently processing jobs
+- `jobsByTag(string $tag, int $limit = 50)` - Get jobs filtered by tag
+- `statistics(?string $startDate = null)` - Get dashboard statistics
+- `retryJob(int $jobId)` - Retry a failed job programmatically
+- `cleanupStuckJobs(int $hoursOld = 24)` - Clean up stuck processing jobs
+- `pruneOldJobs(int $daysOld = 30)` - Prune old job records
+- `logger()` - Get the VantageLogger instance
+- `enable()` / `disable()` / `enabled()` - Control package state
 
 ### Job Tagging
 
@@ -230,6 +289,45 @@ public function boot(): void
 Want to keep the dashboard public but still record jobs? Either return `true` from the gate even for guests, or set `VANTAGE_AUTH_ENABLED=false`.
 
 ## Testing
+
+### Using the Model Factory
+
+Vantage includes a comprehensive model factory for creating test data in your application tests:
+
+```php
+use HoudaSlassi\Vantage\Models\VantageJob;
+
+// Create test jobs
+$job = VantageJob::factory()->create();
+
+// Create specific job states
+$failedJob = VantageJob::factory()->failed()->create();
+$processingJob = VantageJob::factory()->processing()->create();
+$processedJob = VantageJob::factory()->processed()->create();
+
+// Create jobs with tags
+$taggedJob = VantageJob::factory()
+    ->withTags(['email', 'notification'])
+    ->create();
+
+// Create jobs on specific queues
+$highPriorityJob = VantageJob::factory()
+    ->onQueue('high')
+    ->create();
+
+// Create a retry chain
+$originalJob = VantageJob::factory()->failed()->create();
+$retryJob = VantageJob::factory()
+    ->retriedFrom($originalJob->id)
+    ->create();
+
+// Create jobs with specific class names
+$emailJob = VantageJob::factory()
+    ->jobClass('App\\Jobs\\SendEmailJob')
+    ->create();
+```
+
+### Running Package Tests
 
 Run the test suite:
 
@@ -373,6 +471,10 @@ Watch a brief demo of the Vantage dashboard in action:
 
 > Click the thumbnail above to watch the demo video on YouTube.
 
+## Contributing
+
+Please see [CONTRIBUTING](CONTRIBUTING.md) for details on how to contribute to this project.
+
 ## License
 
-MIT
+The MIT License (MIT). Please see [License File](LICENSE) for more information.

@@ -7,29 +7,46 @@ use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
 
 beforeEach(function () {
     VantageJob::query()->delete();
 });
 
 it('records job start when job processing event is fired', function () {
-    $job = new class {
+    $job = new class
+    {
         public $queue = 'default';
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 1; }
-        public function uuid() { return 'test-uuid-123'; }
-        public function resolveName() { return 'App\\Jobs\\TestJob'; }
-        public function payload() {
+
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 1;
+        }
+
+        public function uuid()
+        {
+            return 'test-uuid-123';
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TestJob';
+        }
+
+        public function payload()
+        {
             return [
-                'data' => ['command' => serialize(new stdClass())],
+                'data' => ['command' => serialize(new stdClass)],
             ];
         }
     };
 
     $event = new JobProcessing('test-connection', $job);
-    $listener = new RecordJobStart();
+    $listener = new RecordJobStart;
     $listener->handle($event);
 
     $record = VantageJob::where('uuid', 'test-uuid-123')->first();
@@ -50,16 +67,33 @@ it('records job success and calculates duration', function () {
         'started_at' => now()->subSeconds(5),
     ]);
 
-    $job = new class {
+    $job = new class
+    {
         public $queue = 'default';
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 1; }
-        public function uuid() { return 'test-uuid-123'; }
-        public function resolveName() { return 'App\\Jobs\\TestJob'; }
+
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 1;
+        }
+
+        public function uuid()
+        {
+            return 'test-uuid-123';
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TestJob';
+        }
     };
 
     $event = new JobProcessed('test-connection', $job);
-    $listener = new RecordJobSuccess();
+    $listener = new RecordJobSuccess;
     $listener->handle($event);
 
     $record = VantageJob::where('uuid', 'test-uuid-123')->first();
@@ -79,16 +113,33 @@ it('updates same record from processing to failed', function () {
     ]);
 
     $exception = new \Exception('Test exception message');
-    $job = new class {
+    $job = new class
+    {
         public $queue = 'default';
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 1; }
-        public function uuid() { return 'test-uuid-failed'; }
-        public function resolveName() { return 'App\\Jobs\\TestJob'; }
+
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 1;
+        }
+
+        public function uuid()
+        {
+            return 'test-uuid-failed';
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TestJob';
+        }
     };
 
     $event = new JobFailed('test-connection', $job, $exception);
-    $listener = new RecordJobFailure();
+    $listener = new RecordJobFailure;
     $listener->handle($event);
 
     // Verify it's the SAME record (same ID)
@@ -114,16 +165,33 @@ it('updates same record from processing to processed', function () {
         'started_at' => now()->subSeconds(5),
     ]);
 
-    $job = new class {
+    $job = new class
+    {
         public $queue = 'default';
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 1; }
-        public function uuid() { return 'test-uuid-processed'; }
-        public function resolveName() { return 'App\\Jobs\\TestJob'; }
+
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 1;
+        }
+
+        public function uuid()
+        {
+            return 'test-uuid-processed';
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TestJob';
+        }
     };
 
     $event = new JobProcessed('test-connection', $job);
-    $listener = new RecordJobSuccess();
+    $listener = new RecordJobSuccess;
     $listener->handle($event);
 
     // Verify it's the SAME record (same ID)
@@ -139,14 +207,29 @@ it('updates same record from processing to processed', function () {
 });
 
 it('records job failure with exception details', function () {
-    $job = new class {
+    $job = new class
+    {
         public $queue = 'default';
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 1; }
-        public function resolveName() { return 'App\\Jobs\\TestJob'; }
-        public function payload() {
+
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 1;
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TestJob';
+        }
+
+        public function payload()
+        {
             return [
-                'data' => ['command' => serialize(new stdClass())],
+                'data' => ['command' => serialize(new stdClass)],
             ];
         }
     };
@@ -154,7 +237,7 @@ it('records job failure with exception details', function () {
     $exception = new \Exception('Test error message', 500);
 
     $event = new JobFailed('test-connection', $job, $exception);
-    $listener = new RecordJobFailure();
+    $listener = new RecordJobFailure;
     $listener->handle($event);
 
     $record = VantageJob::where('status', 'failed')
@@ -178,21 +261,42 @@ it('tracks retry chain via retried_from_id', function () {
     ]);
 
     // Simulate retry job with retry marker
-    $retryJob = new class($original->id) {
+    $retryJob = new class($original->id)
+    {
         public $queue = 'default';
+
         public $queueMonitorRetryOf;
-        
-        public function __construct($id) {
+
+        public function __construct($id)
+        {
             $this->queueMonitorRetryOf = $id;
         }
 
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 2; }
-        public function uuid() { return 'retry-uuid'; }
-        public function resolveName() { return 'App\\Jobs\\TestJob'; }
-        public function payload() {
-            $obj = new stdClass();
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 2;
+        }
+
+        public function uuid()
+        {
+            return 'retry-uuid';
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TestJob';
+        }
+
+        public function payload()
+        {
+            $obj = new stdClass;
             $obj->queueMonitorRetryOf = $this->queueMonitorRetryOf;
+
             return [
                 'data' => ['command' => serialize($obj)],
             ];
@@ -201,7 +305,7 @@ it('tracks retry chain via retried_from_id', function () {
 
     // Start retry
     $startEvent = new JobProcessing('test-connection', $retryJob);
-    $startListener = new RecordJobStart();
+    $startListener = new RecordJobStart;
     $startListener->handle($startEvent);
 
     $retryRecord = VantageJob::where('uuid', 'retry-uuid')->first();
@@ -211,7 +315,7 @@ it('tracks retry chain via retried_from_id', function () {
 
     // Complete retry
     $successEvent = new JobProcessed('test-connection', $retryJob);
-    $successListener = new RecordJobSuccess();
+    $successListener = new RecordJobSuccess;
     $successListener->handle($successEvent);
 
     $retryRecord->refresh();
@@ -220,28 +324,48 @@ it('tracks retry chain via retried_from_id', function () {
 
 it('extracts and stores job tags', function () {
     // Create a serializable job class with tags method
-    $taggedJob = new stdClass();
+    $taggedJob = new stdClass;
     $taggedJob->tags = ['important', 'email', 'urgent'];
-    
+
     // Create a mock that simulates Laravel's job serialization
     $serializedCommand = serialize((object) [
         'class' => 'App\\Jobs\\TaggedJob',
         'tags' => ['important', 'email', 'urgent'],
     ]);
 
-    $jobWithTags = new class($serializedCommand) {
+    $jobWithTags = new class($serializedCommand)
+    {
         private $serialized;
+
         public $queue = 'default';
-        
-        public function __construct($serialized) {
+
+        public function __construct($serialized)
+        {
             $this->serialized = $serialized;
         }
 
-        public function getQueue() { return $this->queue; }
-        public function attempts() { return 1; }
-        public function uuid() { return 'tagged-uuid'; }
-        public function resolveName() { return 'App\\Jobs\\TaggedJob'; }
-        public function payload() {
+        public function getQueue()
+        {
+            return $this->queue;
+        }
+
+        public function attempts()
+        {
+            return 1;
+        }
+
+        public function uuid()
+        {
+            return 'tagged-uuid';
+        }
+
+        public function resolveName()
+        {
+            return 'App\\Jobs\\TaggedJob';
+        }
+
+        public function payload()
+        {
             return [
                 'data' => ['command' => $this->serialized],
             ];
@@ -251,9 +375,9 @@ it('extracts and stores job tags', function () {
     // We need to mock the unserialized command to have tags() method
     // Since we can't easily serialize anonymous classes, let's directly test TagExtractor
     // or create a test that validates the stored tags include the queue name (auto tag)
-    
+
     $event = new JobProcessing('test-connection', $jobWithTags);
-    $listener = new RecordJobStart();
+    $listener = new RecordJobStart;
     $listener->handle($event);
 
     $record = VantageJob::where('uuid', 'tagged-uuid')->first();
@@ -261,8 +385,7 @@ it('extracts and stores job tags', function () {
     // At minimum, queue name should be tagged (auto tag)
     expect($record->job_tags)->toBeArray()
         ->and($record->job_tags)->toContain('queue:default');
-    
+
     // Note: Custom tags from jobs() method require proper job serialization
     // This would work with real Laravel jobs that implement tags()
 });
-

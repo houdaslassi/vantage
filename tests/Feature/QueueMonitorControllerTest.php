@@ -136,4 +136,3 @@ it('displays failed jobs page', function () {
         ->assertSee('Failed', false)
         ->assertSee('Test error', false);
 });
-

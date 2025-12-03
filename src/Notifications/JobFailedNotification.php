@@ -2,12 +2,12 @@
 
 namespace HoudaSlassi\Vantage\Notifications;
 
+use HoudaSlassi\Vantage\Models\VantageJob;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackMessage;
-use HoudaSlassi\Vantage\Models\VantageJob;
+use Illuminate\Notifications\Notification;
 
 class JobFailedNotification extends Notification implements ShouldQueue
 {
@@ -52,10 +52,10 @@ class JobFailedNotification extends Notification implements ShouldQueue
             ->attachment(function ($attachment) {
                 $attachment->title($this->jobRun->job_class)
                     ->fields([
-                        'Queue'      => $this->jobRun->queue,
+                        'Queue' => $this->jobRun->queue,
                         'Connection' => $this->jobRun->connection,
-                        'Attempts'   => $this->jobRun->attempt,
-                        'Exception'  => $this->jobRun->exception_class,
+                        'Attempts' => $this->jobRun->attempt,
+                        'Exception' => $this->jobRun->exception_class,
                     ]);
             });
     }

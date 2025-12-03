@@ -1,43 +1,84 @@
 {
     "name": "houdaslassi/vantage",
     "description": "Vantage: Strategic queue monitoring and observability for Laravel applications.",
-  "type": "library",
-  "license": "MIT",
-  "autoload": {
-    "psr-4": {
-      "HoudaSlassi\\Vantage\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "HoudaSlassi\\Vantage\\Tests\\": "tests/"
-    }
-  },
-  "require": {
-    "php": "^8.2|^8.3",
-    "illuminate/support": "^10.0|^11.0|^12.0",
-    "illuminate/queue": "^10.0|^11.0|^12.0",
-    "illuminate/events": "^10.0|^11.0|^12.0",
-    "illuminate/notifications": "^10.0|^11.0|^12.0"
-  },
-  "require-dev": {
-    "orchestra/testbench": "^10.0",
-    "pestphp/pest": "^3.8"
-  },
-  "extra": {
-    "laravel": {
-      "providers": [
-            "HoudaSlassi\\Vantage\\VantageServiceProvider"
-      ]
-    }
-  },
-  "scripts": {
-    "test": "pest",
-    "lint": "php -l src"
-  },
-  "config": {
-    "allow-plugins": {
-      "pestphp/pest-plugin": true
-    }
-  }
+    "keywords": [
+        "houdaslassi",
+        "laravel",
+        "vantage",
+        "queue",
+        "monitoring",
+        "observability"
+    ],
+    "homepage": "https://github.com/houdaslassi/vantage",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Houda Slassi",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.2|^8.3|^8.4",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/queue": "^10.0|^11.0|^12.0",
+        "illuminate/events": "^10.0|^11.0|^12.0",
+        "illuminate/notifications": "^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.14",
+        "orchestra/testbench": "^10.0|^9.0|^8.0",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-arch": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "HoudaSlassi\\Vantage\\": "src/",
+            "HoudaSlassi\\Vantage\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "HoudaSlassi\\Vantage\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@composer run prepare",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint",
+        "lint": "vendor/bin/pint --test",
+        "check": [
+            "@lint",
+            "@analyse",
+            "@test"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "HoudaSlassi\\Vantage\\VantageServiceProvider"
+            ],
+            "aliases": {
+                "Vantage": "HoudaSlassi\\Vantage\\Facades\\Vantage"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

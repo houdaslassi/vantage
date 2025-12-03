@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use HoudaSlassi\Vantage\Http\Controllers\QueueMonitorController;
 use HoudaSlassi\Vantage\Http\Middleware\AuthorizeVantage;
+use Illuminate\Support\Facades\Route;
 
 $prefix = trim(config('vantage.route_prefix', 'vantage'), '/');
 $prefix = $prefix === '' ? 'vantage' : $prefix;
@@ -15,4 +15,3 @@ Route::prefix($prefix)->name('vantage.')->middleware(['web', AuthorizeVantage::c
     Route::get('/failed', [QueueMonitorController::class, 'failed'])->name('failed');
     Route::post('/jobs/{id}/retry', [QueueMonitorController::class, 'retry'])->name('jobs.retry');
 });
-

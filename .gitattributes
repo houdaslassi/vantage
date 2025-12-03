@@ -1,17 +1,30 @@
-# Exclude screenshots from Composer exports
-# Screenshots are kept in repo for GitHub README but not distributed via Composer
-screenshots/ export-ignore
+# Path-based git attributes
+# https://www.kernel.org/pub/software/scm/git/docs/gitattributes.html
+
+# Ignore all test and documentation with "export-ignore".
+/.github            export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/.editorconfig      export-ignore
+/phpunit.xml.dist   export-ignore
+/phpstan.neon.dist  export-ignore
+/phpstan-baseline.neon  export-ignore
+/tests              export-ignore
+/screenshots        export-ignore
+
 # Exclude internal documentation from Composer exports
-RELEASE.md export-ignore
-HOW_TO_RELEASE.md export-ignore
-TODO.md export-ignore
-TAG_LOGIC_MAP.md export-ignore
-USAGE_EXAMPLES.md export-ignore
-PR_DESCRIPTION.md export-ignore
-.stashed-features/ export-ignore
-# Exclude test files from Composer exports (they're in require-dev anyway)
-tests/ export-ignore
+CHANGELOG.md        export-ignore
+RELEASE.md          export-ignore
+HOW_TO_RELEASE.md   export-ignore
+TODO.md             export-ignore
+TAG_LOGIC_MAP.md    export-ignore
+USAGE_EXAMPLES.md   export-ignore
+PR_DESCRIPTION.md   export-ignore
+
 # Exclude development files
+.stashed-features/  export-ignore
 gpg-batch-config.txt export-ignore
-gpg-public-key.txt export-ignore
+gpg-public-key.txt  export-ignore
+
+# Handle large files
 screenshots/*.mov filter=lfs diff=lfs merge=lfs -text

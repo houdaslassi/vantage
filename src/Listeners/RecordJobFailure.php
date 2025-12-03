@@ -2,16 +2,16 @@
 
 namespace HoudaSlassi\Vantage\Listeners;
 
-use HoudaSlassi\Vantage\Notifications\JobFailedNotification;
-use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
-use HoudaSlassi\Vantage\Support\TagExtractor;
-use HoudaSlassi\Vantage\Support\PayloadExtractor;
-use HoudaSlassi\Vantage\Support\JobPerformanceContext;
-use HoudaSlassi\Vantage\Support\VantageLogger;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Queue\Events\JobFailed;
-use Illuminate\Support\Str;
 use HoudaSlassi\Vantage\Models\VantageJob;
+use HoudaSlassi\Vantage\Notifications\JobFailedNotification;
+use HoudaSlassi\Vantage\Support\JobPerformanceContext;
+use HoudaSlassi\Vantage\Support\PayloadExtractor;
+use HoudaSlassi\Vantage\Support\TagExtractor;
+use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
+use HoudaSlassi\Vantage\Support\VantageLogger;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class RecordJobFailure
 {
@@ -20,7 +20,7 @@ class RecordJobFailure
     public function handle(JobFailed $event): void
     {
         // Master switch: if package is disabled, don't track anything
-        if (!config('vantage.enabled', true)) {
+        if (! config('vantage.enabled', true)) {
             return;
         }
 
@@ -44,7 +44,7 @@ class RecordJobFailure
 
         // Fallback: try by job class, queue, connection (ONLY if UUID not available)
         // This should rarely be needed since Laravel 8+ provides uuid()
-        if (!$row && !$hasStableUuid) {
+        if (! $row && ! $hasStableUuid) {
             $row = VantageJob::where('job_class', $jobClass)
                 ->where('queue', $queue)
                 ->where('connection', $connection)
@@ -69,12 +69,12 @@ class RecordJobFailure
                 $ru = @getrusage();
                 if (is_array($ru)) {
                     $userUs = ($ru['ru_utime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_utime.tv_usec'] ?? 0);
-                    $sysUs  = ($ru['ru_stime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_stime.tv_usec'] ?? 0);
+                    $sysUs = ($ru['ru_stime.tv_sec'] ?? 0) * 1_000_000 + ($ru['ru_stime.tv_usec'] ?? 0);
                     if ($uuid) {
                         $baseline = JobPerformanceContext::getBaseline($uuid);
                         if ($baseline) {
                             $cpuDelta['user_ms'] = max(0, (int) round(($userUs - ($baseline['cpu_start_user_us'] ?? 0)) / 1000));
-                            $cpuDelta['sys_ms']  = max(0, (int) round(($sysUs  - ($baseline['cpu_start_sys_us'] ?? 0)) / 1000));
+                            $cpuDelta['sys_ms'] = max(0, (int) round(($sysUs - ($baseline['cpu_start_sys_us'] ?? 0)) / 1000));
                         }
                     }
                 }
@@ -112,19 +112,19 @@ class RecordJobFailure
             ]);
 
             $row = VantageJob::create([
-                'uuid'             => $uuid,
-                'job_class'        => $jobClass,
-                'queue'            => $queue,
-                'connection'       => $connection,
-                'attempt'          => $event->job->attempts(),
-                'status'           => 'failed',
-                'exception_class'  => get_class($event->exception),
-                'exception_message'=> Str::limit($event->exception->getMessage(), 2000),
-                'stack'            => Str::limit($event->exception->getTraceAsString(), 4000),
-                'finished_at'      => now(),
-                'retried_from_id'  => $this->getRetryOf($event),
-                'payload'          => PayloadExtractor::getPayload($event),
-                'job_tags'         => TagExtractor::extract($event),
+                'uuid' => $uuid,
+                'job_class' => $jobClass,
+                'queue' => $queue,
+                'connection' => $connection,
+                'attempt' => $event->job->attempts(),
+                'status' => 'failed',
+                'exception_class' => get_class($event->exception),
+                'exception_message' => Str::limit($event->exception->getMessage(), 2000),
+                'stack' => Str::limit($event->exception->getTraceAsString(), 4000),
+                'finished_at' => now(),
+                'retried_from_id' => $this->getRetryOf($event),
+                'payload' => PayloadExtractor::getPayload($event),
+                'job_tags' => TagExtractor::extract($event),
                 // telemetry end metrics
                 'memory_end_bytes' => $memoryEnd,
                 'memory_peak_end_bytes' => $memoryPeakEnd,
@@ -134,9 +134,9 @@ class RecordJobFailure
         }
 
         VantageLogger::info('Queue Monitor: Job failed', [
-           'id' => $row->id,
-           'job_class' => $row->job_class,
-           'exception' => $row->exception_class,
+            'id' => $row->id,
+            'job_class' => $row->job_class,
+            'exception' => $row->exception_class,
         ]);
 
         if (config('vantage.notify.email') || config('vantage.notify.slack_webhook')) {
@@ -177,4 +177,3 @@ class RecordJobFailure
         return get_class($event->job);
     }
 }
-

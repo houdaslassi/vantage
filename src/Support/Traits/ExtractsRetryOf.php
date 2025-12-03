@@ -57,6 +57,7 @@ trait ExtractsRetryOf
         if (method_exists($event->job, 'getJobId') && $event->job->getJobId()) {
             return (string) $event->job->getJobId();
         }
+
         // Otherwise we'll generate a UUID
         return (string) \Illuminate\Support\Str::uuid();
     }

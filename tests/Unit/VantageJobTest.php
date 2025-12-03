@@ -204,4 +204,3 @@ it('handles null telemetry fields', function () {
         ->and($job->memory_start_bytes)->toBeNull()
         ->and($job->cpu_user_ms)->toBeNull();
 });
-

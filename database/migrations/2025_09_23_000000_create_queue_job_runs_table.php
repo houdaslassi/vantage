@@ -4,8 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     /**
      * Get the database connection for the migration.
      *
@@ -30,7 +30,7 @@ return new class extends Migration {
             $table->unsignedInteger('attempt')->default(0);
             $table->unsignedInteger('retries')->default(0);
             $table->unsignedBigInteger('retried_from_id')->nullable()->references('id')->on('queue_job_runs')->nullOnDelete();
-            $table->enum('status', ['processing','processed','failed'])->index();
+            $table->enum('status', ['processing', 'processed', 'failed'])->index();
 
             // extra details for observability
             $table->unsignedBigInteger('duration_ms')->nullable()->index();

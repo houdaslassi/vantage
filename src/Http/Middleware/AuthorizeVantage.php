@@ -22,12 +22,10 @@ class AuthorizeVantage
 
         // Authorization is fully handled by the Gate
         // The Gate accepts a null user and performs its own logic
-        if (!Gate::allows('viewVantage', $user)) {
+        if (! Gate::allows('viewVantage', $user)) {
             abort(403, 'Unauthorized access to Vantage dashboard.');
         }
 
         return $next($request);
     }
 }
-
-

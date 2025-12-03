@@ -24,29 +24,29 @@ return new class extends Migration
         $connection = $this->getConnection();
         $schema = Schema::connection($connection);
 
-        if (!$schema->hasTable('vantage_jobs')) {
+        if (! $schema->hasTable('vantage_jobs')) {
             return;
         }
 
         $schema->table('vantage_jobs', function (Blueprint $table) {
             // Index for filtering by created_at (most common filter)
             $table->index('created_at', 'idx_vantage_jobs_created_at');
-            
+
             // Index for filtering by status (processed, failed, processing)
             $table->index('status', 'idx_vantage_jobs_status');
-            
+
             // Composite index for created_at + status (common combination)
             $table->index(['created_at', 'status'], 'idx_vantage_jobs_created_status');
-            
+
             // Index for job_class (for grouping and filtering)
             $table->index('job_class', 'idx_vantage_jobs_job_class');
-            
+
             // Index for exception_class (for top exceptions query)
             $table->index('exception_class', 'idx_vantage_jobs_exception_class');
-            
+
             // Index for queue (for queue filtering)
             $table->index('queue', 'idx_vantage_jobs_queue');
-            
+
             // Index for retried_from_id (for retry chain queries)
             $table->index('retried_from_id', 'idx_vantage_jobs_retried_from');
         });
@@ -60,7 +60,7 @@ return new class extends Migration
         $connection = $this->getConnection();
         $schema = Schema::connection($connection);
 
-        if (!$schema->hasTable('vantage_jobs')) {
+        if (! $schema->hasTable('vantage_jobs')) {
             return;
         }
 
@@ -75,4 +75,3 @@ return new class extends Migration
         });
     }
 };
-

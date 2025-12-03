@@ -2,8 +2,8 @@
 
 namespace HoudaSlassi\Vantage\Console\Commands;
 
-use Illuminate\Console\Command;
 use Illuminate\Bus\Queueable;
+use Illuminate\Console\Command;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -26,7 +26,7 @@ class GenerateTestJobs extends Command
     {
         $count = (int) $this->option('count');
         $successRate = (int) $this->option('success-rate');
-        $tags = $this->option('tags') 
+        $tags = $this->option('tags')
             ? explode(',', $this->option('tags'))
             : ['test', 'load-test', 'generated'];
         $queue = $this->option('queue');
@@ -36,18 +36,20 @@ class GenerateTestJobs extends Command
 
         if ($count < 1) {
             $this->error('Count must be at least 1');
+
             return self::FAILURE;
         }
 
         if ($successRate < 0 || $successRate > 100) {
             $this->error('Success rate must be between 0 and 100');
+
             return self::FAILURE;
         }
 
         $this->info("[INFO] Generating {$count} test jobs...");
         $this->info("   Success rate: {$successRate}%");
         $this->info("   Queue: {$queue}");
-        $this->info("   Tags: " . implode(', ', $tags));
+        $this->info('   Tags: '.implode(', ', $tags));
         $this->newLine();
 
         $bar = $this->output->createProgressBar($count);
@@ -89,11 +91,11 @@ class GenerateTestJobs extends Command
         $this->newLine(2);
 
         $this->info("[OK] Dispatched {$dispatched} jobs to queue '{$queue}'");
-        $this->info("   Expected failures: ~" . round($dispatched * (100 - $successRate) / 100));
-        $this->info("   Expected successes: ~" . round($dispatched * $successRate / 100));
+        $this->info('   Expected failures: ~'.round($dispatched * (100 - $successRate) / 100));
+        $this->info('   Expected successes: ~'.round($dispatched * $successRate / 100));
         $this->newLine();
-        $this->info("[TIP] Monitor progress at: /vantage");
-        $this->info("[TIP] Run queue worker: php artisan queue:work");
+        $this->info('[TIP] Monitor progress at: /vantage');
+        $this->info('[TIP] Run queue worker: php artisan queue:work');
 
         return self::SUCCESS;
     }
@@ -111,8 +113,7 @@ class TestLoadJob implements ShouldQueue
         public int $durationMs = 100,
         public array $tags = [],
         public int $jobNumber = 0
-    ) {
-    }
+    ) {}
 
     public function tags(): array
     {
@@ -147,4 +148,3 @@ class TestLoadJob implements ShouldQueue
         }
     }
 }
-

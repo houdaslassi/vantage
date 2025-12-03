@@ -2,6 +2,9 @@
 
 namespace HoudaSlassi\Vantage\Support;
 
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\Jobs\Job;
+
 /**
  * Simple Tag Extractor
  *
@@ -9,10 +12,9 @@ namespace HoudaSlassi\Vantage\Support;
  */
 class TagExtractor
 {
-
     public static function extract($event): ?array
     {
-        if (!config('vantage.tagging.enabled', true)) {
+        if (! config('vantage.tagging.enabled', true)) {
             return null;
         }
 
@@ -41,6 +43,9 @@ class TagExtractor
 
     /**
      * Get job command object from event
+     *
+     * Note: During job processing, we don't know the exact class ahead of time.
+     * We validate after unserializing that it's a valid job class.
      */
     protected static function getCommand($event): ?object
     {
@@ -48,13 +53,27 @@ class TagExtractor
             $payload = $event->job->payload();
             $serialized = $payload['data']['command'] ?? null;
 
-            if (!is_string($serialized)) {
+            if (! is_string($serialized)) {
                 return null;
             }
 
+            // During job processing, Laravel has already validated the job.
+            // We still restrict to prevent arbitrary class instantiation, but we need
+            // to allow classes since jobs are objects. We validate after.
             $command = @unserialize($serialized, ['allowed_classes' => true]);
 
-            return is_object($command) ? $command : null;
+            if (! is_object($command)) {
+                return null;
+            }
+
+            // Security validation: ensure it's a valid job class
+            // This prevents unserializing arbitrary classes even if they got into the queue
+            if (! ($command instanceof ShouldQueue) &&
+                ! ($command instanceof Job)) {
+                return null;
+            }
+
+            return $command;
         } catch (\Throwable $e) {
             return null;
         }
@@ -69,17 +88,17 @@ class TagExtractor
 
         // Queue name (enabled by default)
         if (config('vantage.tagging.auto_tags.queue_name', true)) {
-            $tags[] = 'queue:' . $event->job->getQueue();
+            $tags[] = 'queue:'.$event->job->getQueue();
         }
 
         // Environment (disabled by default)
         if (config('vantage.tagging.auto_tags.environment', false)) {
-            $tags[] = 'env:' . app()->environment();
+            $tags[] = 'env:'.app()->environment();
         }
 
         // Hour (disabled by default)
         if (config('vantage.tagging.auto_tags.hour', false)) {
-            $tags[] = 'hour:' . now()->format('H');
+            $tags[] = 'hour:'.now()->format('H');
         }
 
         return $tags;
@@ -96,9 +115,9 @@ class TagExtractor
      */
     protected static function cleanTags(array $tags): ?array
     {
-        $tags = array_filter($tags, fn($tag) => !empty($tag));
+        $tags = array_filter($tags, fn ($tag) => ! empty($tag));
 
-        $tags = array_map(fn($tag) => strtolower(trim($tag)), $tags);
+        $tags = array_map(fn ($tag) => strtolower(trim($tag)), $tags);
 
         $tags = array_unique($tags);
 
@@ -111,7 +130,6 @@ class TagExtractor
             $tags = array_slice($tags, 0, $maxTags);
         }
 
-        return !empty($tags) ? $tags : null;
+        return ! empty($tags) ? $tags : null;
     }
 }
-

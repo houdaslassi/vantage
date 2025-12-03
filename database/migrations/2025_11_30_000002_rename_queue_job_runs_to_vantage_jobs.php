@@ -3,8 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     /**
      * Get the database connection for the migration.
      *
@@ -20,7 +20,7 @@ return new class extends Migration {
         $connection = $this->getConnection();
         $schema = Schema::connection($connection);
 
-        if ($schema->hasTable('queue_job_runs') && !$schema->hasTable('vantage_jobs')) {
+        if ($schema->hasTable('queue_job_runs') && ! $schema->hasTable('vantage_jobs')) {
             $schema->rename('queue_job_runs', 'vantage_jobs');
         }
     }
@@ -30,9 +30,8 @@ return new class extends Migration {
         $connection = $this->getConnection();
         $schema = Schema::connection($connection);
 
-        if ($schema->hasTable('vantage_jobs') && !$schema->hasTable('queue_job_runs')) {
+        if ($schema->hasTable('vantage_jobs') && ! $schema->hasTable('queue_job_runs')) {
             $schema->rename('vantage_jobs', 'queue_job_runs');
         }
     }
 };
-
