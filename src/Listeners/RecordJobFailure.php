@@ -89,7 +89,7 @@ class RecordJobFailure
             $row->stack = Str::limit($event->exception->getTraceAsString(), 4000);
             $row->finished_at = now();
             if ($row->started_at) {
-                $duration = $row->finished_at->diffInRealMilliseconds($row->started_at, true);
+                $duration = $row->finished_at->diffInUTCMilliseconds($row->started_at, true);
                 $row->duration_ms = max(0, (int) $duration);
             }
             // Telemetry end metrics
