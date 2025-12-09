@@ -113,33 +113,35 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        // Top tags - only select needed columns
-        $topTags = VantageJob::select(['job_tags', 'status', 'job_class'])
-            ->where('created_at', '>', $since)
-            ->whereNotNull('job_tags')
-            ->get()
-            ->flatMap(function ($job) {
-                return collect($job->job_tags)->map(function ($tag) use ($job) {
-                    return [
-                        'tag' => $tag,
-                        'status' => $job->status,
-                        'job_class' => $job->job_class,
-                    ];
-                });
-            })
-            ->groupBy('tag')
-            ->map(function ($jobs, $tag) {
-                return [
-                    'tag' => $tag,
-                    'total' => $jobs->count(),
-                    'failed' => $jobs->where('status', 'failed')->count(),
-                    'processed' => $jobs->where('status', 'processed')->count(),
-                    'processing' => $jobs->where('status', 'processing')->count(),
-                ];
-            })
-            ->sortByDesc('total')
-            ->take(10)
-            ->values();
+        // Top tags - aggregated fully in SQL to avoid loading all jobs into memory
+        // Uses MySQL 8.0 JSON_TABLE to unnest the job_tags JSON array
+        $connection = (new VantageJob())->getConnectionName();
+        $conn = DB::connection($connection);
+        $table = $conn->getQueryGrammar()->wrapTable((new VantageJob())->getTable());
+        $sql = "
+            SELECT
+                jt.tag AS tag,
+                COUNT(*) AS total,
+                SUM(CASE WHEN v.status = 'failed' THEN 1 ELSE 0 END) AS failed,
+                SUM(CASE WHEN v.status = 'processed' THEN 1 ELSE 0 END) AS processed,
+                SUM(CASE WHEN v.status = 'processing' THEN 1 ELSE 0 END) AS processing
+            FROM {$table} v
+            JOIN JSON_TABLE(v.job_tags, '$[*]' COLUMNS(tag VARCHAR(255) PATH '$')) jt
+            WHERE v.created_at > ? AND v.job_tags IS NOT NULL
+            GROUP BY jt.tag
+            ORDER BY total DESC
+            LIMIT 10
+        ";
+        $rows = $conn->select($sql, [$since]);
+        $topTags = collect($rows)->map(function ($row) {
+            return [
+                'tag' => $row->tag,
+                'total' => (int) $row->total,
+                'failed' => (int) $row->failed,
+                'processed' => (int) $row->processed,
+                'processing' => (int) $row->processing,
+            ];
+        });
 
         // Recent batches (if batch table exists)
         $recentBatches = collect();
