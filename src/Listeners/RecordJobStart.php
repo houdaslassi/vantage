@@ -8,6 +8,8 @@ use HoudaSlassi\Vantage\Support\PayloadExtractor;
 use HoudaSlassi\Vantage\Support\TagExtractor;
 use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Str;
+use HoudaSlassi\Vantage\Models\VantageJob;
 
 class RecordJobStart
 {
@@ -93,7 +95,7 @@ class RecordJobStart
         }
 
         // Last resort: generate new UUID
-        return (string) \Illuminate\Support\Str::uuid();
+        return (string) Str::uuid();
     }
 
     /**

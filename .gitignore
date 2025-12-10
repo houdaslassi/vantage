@@ -37,6 +37,14 @@ Thumbs.db
 *.swp
 *.swo
 
+# Testing
+.phpunit.result.cache
+.phpunit.cache/
+.pest.xml
+
+# Build artifacts
+/build/
+
 # Local docs (keep these out)
 # RELEASE.md - internal release guide
 # TODO.md - internal notes

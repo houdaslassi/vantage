@@ -92,7 +92,7 @@ class RecordJobSuccess
             $row->status = 'processed';
             $row->finished_at = now();
             if ($row->started_at) {
-                $duration = $row->finished_at->diffInRealMilliseconds($row->started_at, true);
+                $duration = $row->finished_at->diffInUTCMilliseconds($row->started_at, true);
                 $row->duration_ms = max(0, (int) $duration);
             }
 
@@ -152,7 +152,7 @@ class RecordJobSuccess
         }
 
         // Last resort: generate new UUID
-        return (string) \Illuminate\Support\Str::uuid();
+        return (string) Str::uuid();
     }
 
     protected function jobClass(JobProcessed $event): string
