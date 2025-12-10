@@ -28,16 +28,16 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ $job->id }}</td>
                     <td class="px-6 py-4 text-sm font-medium text-gray-900" title="{{ $job->job_class }}">
-                        {{ Str::limit(class_basename($job->job_class), 30) }}
+                        {{ str()->limit(class_basename($job->job_class), 30) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $job->queue ?? 'default' }}
                     </td>
                     <td class="px-6 py-4 text-sm text-red-600 font-mono text-xs" title="{{ $job->exception_class }}">
-                        {{ Str::limit(class_basename($job->exception_class), 25) }}
+                        {{ str()->limit(class_basename($job->exception_class), 25) }}
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-500" title="{{ $job->exception_message }}">
-                        {{ Str::limit($job->exception_message, 50) }}
+                        {{ str()->limit($job->exception_message, 50) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ $job->finished_at ? $job->finished_at->diffForHumans() : '-' }}

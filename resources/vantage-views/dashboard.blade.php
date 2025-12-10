@@ -328,7 +328,7 @@
                     <div class="flex items-center justify-between border rounded-lg p-3 hover:bg-gray-50">
                         <div class="flex-1 min-w-0">
                             <span class="text-sm font-medium text-gray-900 truncate block" title="{{ $job->job_class }}">
-                                {{ Str::limit(class_basename($job->job_class), 30) }}
+                                {{ str()->limit(class_basename($job->job_class), 30) }}
                             </span>
                             <span class="text-xs text-gray-500">{{ number_format($job->count) }} jobs</span>
                         </div>
@@ -367,7 +367,7 @@
                     <div class="flex items-center justify-between border rounded-lg p-3 hover:bg-gray-50">
                         <div class="flex-1 min-w-0">
                             <span class="text-sm font-medium text-gray-900 truncate block" title="{{ $job->job_class }}">
-                                {{ Str::limit(class_basename($job->job_class), 30) }}
+                                {{ str()->limit(class_basename($job->job_class), 30) }}
                             </span>
                             <span class="text-xs text-gray-500">{{ number_format($job->count) }} jobs</span>
                         </div>
@@ -409,7 +409,7 @@
                         <div class="border rounded-lg p-3 hover:bg-gray-50">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-900 truncate" title="{{ $tagData['tag'] }}">
-                                    {{ Str::limit($tagData['tag'], 20) }}
+                                    {{ str()->limit($tagData['tag'], 20) }}
                                 </span>
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                     {{ number_format($tagData['total']) }}
@@ -459,7 +459,7 @@
                     @foreach($topFailingJobs as $job)
                         <div class="flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-900 truncate" title="{{ $job->job_class }}">
-                                {{ Str::limit(class_basename($job->job_class), 25) }}
+                                {{ str()->limit(class_basename($job->job_class), 25) }}
                             </span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                 {{ number_format($job->failure_count) }}
@@ -488,7 +488,7 @@
                     @foreach($topExceptions as $exception)
                         <div class="flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-900 truncate" title="{{ $exception->exception_class }}">
-                                {{ Str::limit(class_basename($exception->exception_class), 25) }}
+                                {{ str()->limit(class_basename($exception->exception_class), 25) }}
                             </span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                 {{ number_format($exception->count) }}
@@ -514,7 +514,7 @@
                     @foreach($slowestJobs as $job)
                         <div class="flex items-center justify-between">
                             <span class="text-sm font-medium text-gray-900 truncate" title="{{ $job->job_class }}">
-                                {{ Str::limit(class_basename($job->job_class), 25) }}
+                                {{ str()->limit(class_basename($job->job_class), 25) }}
                             </span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                 @if($job->avg_duration < 1000)
@@ -604,7 +604,7 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{ $job->id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" title="{{ $job->job_class }}">
-                                {{ Str::limit(class_basename($job->job_class), 30) }}
+                                {{ str()->limit(class_basename($job->job_class), 30) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ $job->queue ?? 'default' }}
@@ -614,7 +614,7 @@
                                     <div class="flex flex-wrap gap-1">
                                         @foreach(array_slice($job->job_tags, 0, 3) as $tag)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ Str::limit($tag, 15) }}
+                                                {{ str()->limit($tag, 15) }}
                                             </span>
                                         @endforeach
                                         @if(count($job->job_tags) > 3)
