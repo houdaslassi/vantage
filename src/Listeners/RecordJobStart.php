@@ -82,7 +82,7 @@ class RecordJobStart
 
         // Insert tags into denormalized table for efficient aggregation
         if (! empty($tags)) {
-            (new TagAggregator())->insertJobTags($job->id, $tags, $createdAt);
+            (new TagAggregator)->insertJobTags($job->id, $tags, $createdAt);
         }
     }
 

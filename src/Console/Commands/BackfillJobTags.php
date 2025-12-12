@@ -6,7 +6,6 @@ use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\TagAggregator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class BackfillJobTags extends Command
 {
@@ -19,7 +18,7 @@ class BackfillJobTags extends Command
 
     public function handle(): int
     {
-        $aggregator = new TagAggregator();
+        $aggregator = new TagAggregator;
 
         // Check if tags table exists
         if (! $aggregator->hasTagsTable()) {
@@ -187,4 +186,3 @@ class BackfillJobTags extends Command
         return config('vantage.database_connection');
     }
 }
-

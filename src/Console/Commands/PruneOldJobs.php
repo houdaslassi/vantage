@@ -141,7 +141,7 @@ class PruneOldJobs extends Command
         $this->info("\nSuccessfully pruned {$deleted} job record(s) older than {$period}.");
 
         // Also prune the denormalized tags table if it exists
-        $tagAggregator = new TagAggregator();
+        $tagAggregator = new TagAggregator;
         if ($tagAggregator->hasTagsTable()) {
             $tagsDeleted = $tagAggregator->pruneOldTags($cutoff);
             if ($tagsDeleted > 0) {

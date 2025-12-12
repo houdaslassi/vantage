@@ -116,7 +116,7 @@ class QueueMonitorController extends Controller
             ->get();
 
         // Top tags - use optimized database-native queries for large datasets
-        $tagAggregator = new TagAggregator();
+        $tagAggregator = new TagAggregator;
         $topTags = $tagAggregator->getTopTags($since, 10);
 
         // Recent batches (if batch table exists)
@@ -340,7 +340,7 @@ class QueueMonitorController extends Controller
 
         // Get all available tags with counts - use optimized queries
         // Only look at last 30 days to limit data size
-        $tagAggregator = new TagAggregator();
+        $tagAggregator = new TagAggregator;
         $allTags = $tagAggregator->getTopTags(now()->subDays(30), 50);
 
         return view('vantage::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
@@ -371,7 +371,7 @@ class QueueMonitorController extends Controller
         $since = $this->getSinceDate($period);
 
         // Use optimized database-native queries for large datasets
-        $tagAggregator = new TagAggregator();
+        $tagAggregator = new TagAggregator;
         $tagStats = $tagAggregator->getTagStats($since);
 
         return view('vantage::tags', compact('tagStats', 'period'));

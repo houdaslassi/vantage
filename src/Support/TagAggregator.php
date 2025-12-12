@@ -36,7 +36,7 @@ class TagAggregator
 
     public function __construct()
     {
-        $model = new VantageJob();
+        $model = new VantageJob;
         $this->connectionName = $model->getConnectionName() ?? config('database.default');
         $this->connection = DB::connection($this->connectionName);
         $this->driver = $this->connection->getDriverName();
@@ -724,4 +724,3 @@ class TagAggregator
         }
     }
 }
-

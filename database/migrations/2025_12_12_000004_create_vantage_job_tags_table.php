@@ -58,4 +58,3 @@ return new class extends Migration
         $schema->dropIfExists('vantage_job_tags');
     }
 };
-
