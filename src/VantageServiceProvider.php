@@ -34,8 +34,7 @@ class VantageServiceProvider extends ServiceProvider
                 Console\Commands\RetryFailedJob::class,
                 Console\Commands\CleanupStuckJobs::class,
                 Console\Commands\PruneOldJobs::class,
-                // Console\Commands\ListJobs::class,
-                // Console\Commands\TagStats::class,
+                Console\Commands\BackfillJobTags::class,
             ]);
         }
 

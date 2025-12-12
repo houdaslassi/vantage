@@ -3,6 +3,7 @@
 namespace HoudaSlassi\Vantage\Console\Commands;
 
 use HoudaSlassi\Vantage\Models\VantageJob;
+use HoudaSlassi\Vantage\Support\TagAggregator;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -138,6 +139,15 @@ class PruneOldJobs extends Command
         });
 
         $this->info("\nSuccessfully pruned {$deleted} job record(s) older than {$period}.");
+
+        // Also prune the denormalized tags table if it exists
+        $tagAggregator = new TagAggregator;
+        if ($tagAggregator->hasTagsTable()) {
+            $tagsDeleted = $tagAggregator->pruneOldTags($cutoff);
+            if ($tagsDeleted > 0) {
+                $this->line("Also pruned {$tagsDeleted} tag record(s) from vantage_job_tags table.");
+            }
+        }
 
         // Show remaining stats
         $remaining = VantageJob::count();

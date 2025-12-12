@@ -3,9 +3,9 @@
 namespace HoudaSlassi\Vantage\Listeners;
 
 use HoudaSlassi\Vantage\Models\VantageJob;
-use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\JobPerformanceContext;
 use HoudaSlassi\Vantage\Support\PayloadExtractor;
+use HoudaSlassi\Vantage\Support\TagAggregator;
 use HoudaSlassi\Vantage\Support\TagExtractor;
 use HoudaSlassi\Vantage\Support\Traits\ExtractsRetryOf;
 use Illuminate\Queue\Events\JobProcessing;
@@ -59,24 +59,31 @@ class RecordJobStart
         $jobClass = $this->jobClass($event);
         $queue = $event->job->getQueue();
         $connection = $event->connectionName ?? null;
+        $tags = TagExtractor::extract($event);
+        $createdAt = now();
 
         // Always create a new record on job start
         // The UUID will be used by Success/Failure listeners to find and update this record
-        VantageJob::create([
+        $job = VantageJob::create([
             'uuid' => $uuid,
             'job_class' => $jobClass,
             'queue' => $queue,
             'connection' => $connection,
             'attempt' => $event->job->attempts(),
             'status' => 'processing',
-            'started_at' => now(),
+            'started_at' => $createdAt,
             'retried_from_id' => $this->getRetryOf($event),
             'payload' => $payloadJson,
-            'job_tags' => TagExtractor::extract($event),
+            'job_tags' => $tags,
             // telemetry columns (nullable if disabled/unsampled)
             'memory_start_bytes' => $memoryStart,
             'memory_peak_start_bytes' => $memoryPeakStart,
         ]);
+
+        // Insert tags into denormalized table for efficient aggregation
+        if (! empty($tags)) {
+            (new TagAggregator)->insertJobTags($job->id, $tags, $createdAt);
+        }
     }
 
     /**

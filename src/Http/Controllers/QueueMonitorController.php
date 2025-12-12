@@ -4,6 +4,7 @@ namespace HoudaSlassi\Vantage\Http\Controllers;
 
 use HoudaSlassi\Vantage\Models\VantageJob;
 use HoudaSlassi\Vantage\Support\QueueDepthChecker;
+use HoudaSlassi\Vantage\Support\TagAggregator;
 use HoudaSlassi\Vantage\Support\VantageLogger;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
@@ -114,8 +115,9 @@ class QueueMonitorController extends Controller
             ->limit(5)
             ->get();
 
-        // Top tags - use chunking to avoid memory issues with large datasets
-        $topTags = $this->getTopTags($since, 10);
+        // Top tags - use optimized database-native queries for large datasets
+        $tagAggregator = new TagAggregator;
+        $topTags = $tagAggregator->getTopTags($since, 10);
 
         // Recent batches (if batch table exists)
         $recentBatches = collect();
@@ -336,9 +338,10 @@ class QueueMonitorController extends Controller
 
         $jobClasses = VantageJob::distinct()->pluck('job_class')->map(fn ($c) => class_basename($c))->filter();
 
-        // Get all available tags with counts - use chunking to avoid memory issues
-        // Only look at last 30 days to limit memory usage
-        $allTags = $this->getTopTags(now()->subDays(30), 50);
+        // Get all available tags with counts - use optimized queries
+        // Only look at last 30 days to limit data size
+        $tagAggregator = new TagAggregator;
+        $allTags = $tagAggregator->getTopTags(now()->subDays(30), 50);
 
         return view('vantage::jobs', compact('jobs', 'queues', 'jobClasses', 'allTags'));
     }
@@ -367,52 +370,9 @@ class QueueMonitorController extends Controller
         $period = $request->get('period', '7d');
         $since = $this->getSinceDate($period);
 
-        // Get all jobs with tags - only select needed columns
-        $jobs = VantageJob::select(['job_tags', 'status', 'duration_ms'])
-            ->whereNotNull('job_tags')
-            ->where('created_at', '>', $since)
-            ->get();
-
-        // Calculate tag statistics
-        $tagStats = [];
-        foreach ($jobs as $job) {
-            foreach ($job->job_tags ?? [] as $tag) {
-                if (! isset($tagStats[$tag])) {
-                    $tagStats[$tag] = [
-                        'total' => 0,
-                        'processed' => 0,
-                        'failed' => 0,
-                        'processing' => 0,
-                        'durations' => [],
-                    ];
-                }
-
-                $tagStats[$tag]['total']++;
-                $tagStats[$tag][$job->status]++;
-
-                if ($job->duration_ms) {
-                    $tagStats[$tag]['durations'][] = $job->duration_ms;
-                }
-            }
-        }
-
-        // Calculate averages and success rates
-        foreach ($tagStats as $tag => &$stats) {
-            $stats['avg_duration'] = ! empty($stats['durations'])
-                ? round(array_sum($stats['durations']) / count($stats['durations']), 2)
-                : 0;
-
-            $stats['success_rate'] = $stats['total'] > 0
-                ? round(($stats['processed'] / $stats['total']) * 100, 1)
-                : 0;
-
-            unset($stats['durations']);
-        }
-
-        // Sort by total count
-        uasort($tagStats, fn ($a, $b) => $b['total'] <=> $a['total']);
-        // Use chunking to avoid memory issues with large datasets
-        $tagStats = $this->getTagStats($since);
+        // Use optimized database-native queries for large datasets
+        $tagAggregator = new TagAggregator;
+        $tagStats = $tagAggregator->getTagStats($since);
 
         return view('vantage::tags', compact('tagStats', 'period'));
     }
@@ -590,104 +550,6 @@ class QueueMonitorController extends Controller
         }
 
         return array_reverse($chain);
-    }
-
-    /**
-     * Get top tags using chunking to avoid memory issues
-     *
-     * @param  \Carbon\Carbon  $since
-     * @return \Illuminate\Support\Collection
-     */
-    protected function getTopTags($since, int $limit = 10)
-    {
-        $tagStats = [];
-
-        VantageJob::select(['job_tags', 'status'])
-            ->where('created_at', '>', $since)
-            ->whereNotNull('job_tags')
-            ->chunk(1000, function ($jobs) use (&$tagStats) {
-                foreach ($jobs as $job) {
-                    foreach ($job->job_tags ?? [] as $tag) {
-                        if (! isset($tagStats[$tag])) {
-                            $tagStats[$tag] = [
-                                'tag' => $tag,
-                                'total' => 0,
-                                'failed' => 0,
-                                'processed' => 0,
-                                'processing' => 0,
-                            ];
-                        }
-                        $tagStats[$tag]['total']++;
-                        if (isset($tagStats[$tag][$job->status])) {
-                            $tagStats[$tag][$job->status]++;
-                        }
-                    }
-                }
-            });
-
-        return collect($tagStats)
-            ->sortByDesc('total')
-            ->take($limit)
-            ->values();
-    }
-
-    /**
-     * Get tag statistics using chunking to avoid memory issues
-     *
-     * @param  \Carbon\Carbon  $since
-     */
-    protected function getTagStats($since): array
-    {
-        $tagStats = [];
-
-        VantageJob::select(['job_tags', 'status', 'duration_ms'])
-            ->whereNotNull('job_tags')
-            ->where('created_at', '>', $since)
-            ->chunk(1000, function ($jobs) use (&$tagStats) {
-                foreach ($jobs as $job) {
-                    foreach ($job->job_tags ?? [] as $tag) {
-                        if (! isset($tagStats[$tag])) {
-                            $tagStats[$tag] = [
-                                'total' => 0,
-                                'processed' => 0,
-                                'failed' => 0,
-                                'processing' => 0,
-                                'duration_sum' => 0,
-                                'duration_count' => 0,
-                            ];
-                        }
-
-                        $tagStats[$tag]['total']++;
-                        if (isset($tagStats[$tag][$job->status])) {
-                            $tagStats[$tag][$job->status]++;
-                        }
-
-                        if ($job->duration_ms) {
-                            $tagStats[$tag]['duration_sum'] += $job->duration_ms;
-                            $tagStats[$tag]['duration_count']++;
-                        }
-                    }
-                }
-            });
-
-        // Calculate averages and success rates
-        foreach ($tagStats as $tag => &$stats) {
-            $stats['avg_duration'] = $stats['duration_count'] > 0
-                ? round($stats['duration_sum'] / $stats['duration_count'], 2)
-                : 0;
-
-            $stats['success_rate'] = $stats['total'] > 0
-                ? round(($stats['processed'] / $stats['total']) * 100, 1)
-                : 0;
-
-            // Remove intermediate calculation fields
-            unset($stats['duration_sum'], $stats['duration_count']);
-        }
-
-        // Sort by total count
-        uasort($tagStats, fn ($a, $b) => $b['total'] <=> $a['total']);
-
-        return $tagStats;
     }
 
     /**
